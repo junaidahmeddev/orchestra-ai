@@ -1,0 +1,226 @@
+// ============================================================
+// orchestra.ai — Database Schema (PostgreSQL + Prisma)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------
+
+enum NodeType {
+  TRIGGER
+  AI_ENGINE
+  DATA_PROCESSOR
+  INTEGRATION
+  OUTPUT
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum NodeRunStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+enum AIProvider {
+  OPENAI
+  ANTHROPIC
+  GEMINI
+}
+
+enum TriggerSource {
+  MANUAL
+  WEBHOOK
+  CRON
+}
+
+// ------------------------------------------------------------
+// USER & AUTH
+// ------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String?   // null if OAuth-only login
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  workflows     Workflow[]
+  apiKeys       ApiKey[]
+  accounts      Account[]  // for OAuth providers (NextAuth-style)
+
+  @@map("users")
+}
+
+// Optional: supports NextAuth/Auth.js OAuth linking (Google, GitHub login)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// ------------------------------------------------------------
+// API KEYS (encrypted at rest — AES-256 handled at app layer)
+// ------------------------------------------------------------
+
+model ApiKey {
+  id            String     @id @default(cuid())
+  userId        String
+  provider      AIProvider
+  encryptedKey  String     // AES-256 ciphertext, never store plain text
+  iv            String     // initialization vector for decryption
+  label         String?    // e.g. "Personal OpenAI Key"
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider, label])
+  @@map("api_keys")
+}
+
+// ------------------------------------------------------------
+// WORKFLOW (the saved project / canvas)
+// ------------------------------------------------------------
+
+model Workflow {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+
+  // Full React Flow graph JSON (nodes + edges + viewport) for fast canvas load.
+  // Normalized Node/Edge tables below are kept in sync for querying/execution.
+  canvasJson  Json
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodes WorkflowNode[]
+  edges WorkflowEdge[]
+  runs  WorkflowRun[]
+
+  @@index([userId])
+  @@map("workflows")
+}
+
+// ------------------------------------------------------------
+// NODES & EDGES (normalized graph structure)
+// ------------------------------------------------------------
+
+model WorkflowNode {
+  id          String   @id @default(cuid())
+  workflowId  String
+  type        NodeType
+
+  // Canvas position (React Flow)
+  positionX   Float
+  positionY   Float
+
+  // Node-specific config, shape varies by NodeType:
+  // TRIGGER: { triggerType: "manual" | "webhook", webhookUrl? }
+  // AI_ENGINE: { provider, model, systemPrompt, temperature }
+  // DATA_PROCESSOR: { language: "javascript" | "python", code }
+  // INTEGRATION: { service, endpoint, method, headers, bodyTemplate }
+  // OUTPUT: { format }
+  config      Json
+
+  label       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workflow      Workflow       @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  sourceEdges   WorkflowEdge[] @relation("EdgeSource")
+  targetEdges   WorkflowEdge[] @relation("EdgeTarget")
+  nodeRuns      NodeRun[]
+
+  @@index([workflowId])
+  @@map("workflow_nodes")
+}
+
+model WorkflowEdge {
+  id            String  @id @default(cuid())
+  workflowId    String
+  sourceNodeId  String
+  targetNodeId  String
+  sourceHandle  String? // handle id, since a node can have multiple outputs
+  targetHandle  String?
+
+  workflow   Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  sourceNode WorkflowNode @relation("EdgeSource", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode WorkflowNode @relation("EdgeTarget", fields: [targetNodeId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@map("workflow_edges")
+}
+
+// ------------------------------------------------------------
+// EXECUTION / RUN HISTORY (real-time tracking & logs)
+// ------------------------------------------------------------
+
+model WorkflowRun {
+  id          String        @id @default(cuid())
+  workflowId  String
+  status      RunStatus     @default(PENDING)
+  triggeredBy TriggerSource @default(MANUAL)
+  startedAt   DateTime      @default(now())
+  finishedAt  DateTime?
+  errorMessage String?
+
+  workflow Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  nodeRuns NodeRun[]
+
+  @@index([workflowId])
+  @@map("workflow_runs")
+}
+
+model NodeRun {
+  id            String        @id @default(cuid())
+  workflowRunId String
+  nodeId        String
+  status        NodeRunStatus @default(PENDING)
+
+  input       Json?
+  output      Json?
+  errorMessage String?
+
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  workflowRun WorkflowRun  @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  node        WorkflowNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@index([workflowRunId])
+  @@index([nodeId])
+  @@map("node_runs")
+}
