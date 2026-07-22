@@ -42,3 +42,6 @@ next-env.d.ts
 # prisma (keep schema + migrations, ignore local dev db files if any)
 prisma/*.db
 prisma/*.db-journal
+
+# product requirements document copies
+orchestra-ai-prd*.md
