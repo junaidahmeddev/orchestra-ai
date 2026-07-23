@@ -1,0 +1,77 @@
+// ============================================================
+// POST /api/workflows/:id/run — Trigger a workflow execution
+//
+// 1. Validates the user is logged in and owns the workflow
+// 2. Creates a WorkflowRun row (PENDING) in the database
+// 3. Sends an event to Inngest to start the background job
+// 4. Returns the runId immediately (doesn't wait for completion)
+// ============================================================
+
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { inngest } from "@/lib/jobs/inngestClient";
+
+interface RouteParams {
+  params: {
+    id: string;
+  };
+}
+
+export async function POST(req: Request, { params }: RouteParams) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: workflowId } = params;
+
+    // Verify the workflow exists and belongs to this user
+    const workflow = await db.workflow.findUnique({
+      where: { id: workflowId },
+    });
+
+    if (!workflow) {
+      return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
+    }
+
+    if (workflow.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Forbidden: You do not own this workflow" },
+        { status: 403 }
+      );
+    }
+
+    // Create a WorkflowRun row in PENDING state
+    const workflowRun = await db.workflowRun.create({
+      data: {
+        workflowId,
+        status: "PENDING",
+        triggeredBy: "MANUAL",
+      },
+    });
+
+    // Fire an event to Inngest — this returns instantly
+    await inngest.send({
+      name: "workflow/run.requested",
+      data: {
+        workflowRunId: workflowRun.id,
+        workflowId,
+      },
+    });
+
+    return NextResponse.json(
+      { runId: workflowRun.id, status: "PENDING" },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error(`POST /api/workflows/${params.id}/run error:`, error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
