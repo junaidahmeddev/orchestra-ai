@@ -11,6 +11,7 @@
 
 import { inngest } from "./inngestClient";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { topologicalSort } from "@/lib/engine/topologicalSort";
 import { nodeHandlerRegistry } from "@/lib/engine/nodeHandlers";
 import { EngineNode, EngineEdge, NodeType } from "@/lib/engine/types";
@@ -96,14 +97,14 @@ export const runWorkflow = inngest.createFunction(
           update: {
             type: node.type,
             label: node.label,
-            config: node.config as any,
+            config: node.config as Prisma.InputJsonValue,
           },
           create: {
             id: node.id,
             workflowId,
             type: node.type,
             label: node.label,
-            config: node.config as any,
+            config: node.config as Prisma.InputJsonValue,
             positionX: 0,
             positionY: 0,
           },
@@ -159,6 +160,7 @@ export const runWorkflow = inngest.createFunction(
             nodeId: node.id,
             config: node.config,
             data: mergedInput,
+            userId: workflow.userId,
           });
 
           // Store output for downstream nodes
@@ -169,8 +171,8 @@ export const runWorkflow = inngest.createFunction(
             where: { id: nodeRunId },
             data: {
               status: "SUCCESS",
-              input: mergedInput as any,
-              output: result.output as any,
+              input: mergedInput as Prisma.InputJsonValue,
+              output: result.output as Prisma.InputJsonValue,
               finishedAt: new Date(),
             },
           });

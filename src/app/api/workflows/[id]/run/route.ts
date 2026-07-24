@@ -13,6 +13,8 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { inngest } from "@/lib/jobs/inngestClient";
 
+export const dynamic = "force-dynamic";
+
 interface RouteParams {
   params: {
     id: string;
@@ -54,14 +56,39 @@ export async function POST(req: Request, { params }: RouteParams) {
       },
     });
 
-    // Fire an event to Inngest — this returns instantly
-    await inngest.send({
-      name: "workflow/run.requested",
-      data: {
-        workflowRunId: workflowRun.id,
-        workflowId,
-      },
-    });
+    // Fire an event to Inngest — wrapped in specific try/catch for queue resilience
+    try {
+      await inngest.send({
+        name: "workflow/run.requested",
+        data: {
+          workflowRunId: workflowRun.id,
+          workflowId,
+        },
+      });
+    } catch (inngestErr: unknown) {
+      const errorMsg =
+        inngestErr instanceof Error ? inngestErr.message : String(inngestErr);
+
+      console.error("Failed to dispatch job to Inngest queue:", errorMsg);
+
+      // Immediately mark the WorkflowRun as FAILED so it does not hang in PENDING
+      await db.workflowRun.update({
+        where: { id: workflowRun.id },
+        data: {
+          status: "FAILED",
+          errorMessage: `Background job queue (Inngest) is unreachable: ${errorMsg}`,
+          finishedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            "Background job queue service is currently unavailable. Please ensure Inngest dev server is running and try again.",
+        },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json(
       { runId: workflowRun.id, status: "PENDING" },

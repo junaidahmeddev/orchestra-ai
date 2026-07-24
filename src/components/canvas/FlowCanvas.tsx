@@ -7,10 +7,12 @@ import ReactFlow, {
   MiniMap,
   ReactFlowInstance,
   Panel,
+  NodeProps,
+  Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
-import { useCanvasStore } from "@/store/canvasStore";
+import { useCanvasStore, CustomNode } from "@/store/canvasStore";
 import TriggerNode from "./nodes/TriggerNode";
 import AIEngineNode from "./nodes/AIEngineNode";
 import DataProcessorNode from "./nodes/DataProcessorNode";
@@ -22,7 +24,11 @@ interface FlowCanvasProps {
   nodeStatuses?: Map<string, string>;
 }
 
-const CustomNodeComponent = (props: any) => {
+type CustomNodeProps = NodeProps<CustomNode["data"]> & {
+  nodeStatuses?: Map<string, string>;
+};
+
+const CustomNodeComponent = (props: CustomNodeProps) => {
   const { data, id } = props;
   const status = props.nodeStatuses?.get(id);
 
@@ -94,7 +100,7 @@ export default function FlowCanvas({ nodeStatuses }: FlowCanvasProps) {
   // Create nodeTypes with nodeStatuses injected
   const nodeTypes = React.useMemo(
     () => ({
-      customNode: (nodeProps: any) => (
+      customNode: (nodeProps: NodeProps<CustomNode["data"]>) => (
         <CustomNodeComponent {...nodeProps} nodeStatuses={nodeStatuses} />
       ),
     }),
@@ -121,13 +127,13 @@ export default function FlowCanvas({ nodeStatuses }: FlowCanvasProps) {
         y: event.clientY,
       });
 
-      addNode(type as any, position);
+      addNode(type as CustomNode["data"]["type"], position);
     },
     [reactFlowInstance, addNode]
   );
 
   const onNodeClick = useCallback(
-    (_: React.MouseEvent, node: any) => {
+    (_: React.MouseEvent, node: Node) => {
       selectNode(node.id);
     },
     [selectNode]
@@ -151,6 +157,7 @@ export default function FlowCanvas({ nodeStatuses }: FlowCanvasProps) {
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
+        deleteKeyCode={["Backspace", "Delete"]}
         fitView
         className="w-full h-full"
       >

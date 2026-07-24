@@ -11,6 +11,8 @@ import { serve } from "inngest/next";
 import { inngest } from "@/lib/jobs/inngestClient";
 import { runWorkflow } from "@/lib/jobs/runWorkflow";
 
+export const dynamic = "force-dynamic";
+
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [runWorkflow],

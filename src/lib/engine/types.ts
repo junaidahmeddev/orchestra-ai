@@ -72,6 +72,7 @@ export interface NodeHandlerInput {
   nodeId: string;
   config: NodeConfig;
   data: Record<string, unknown>;
+  userId?: string;
 }
 
 /**

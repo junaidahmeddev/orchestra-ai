@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import bcrypt from "bcrypt";
+import { hash } from "bcrypt";
 import * as z from "zod";
 
 const registerSchema = z.object({
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     // Hash password
     const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await hash(password, saltRounds);
 
     // Create user
     await db.user.create({

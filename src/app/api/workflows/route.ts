@@ -2,13 +2,16 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import * as z from "zod";
+
+export const dynamic = "force-dynamic";
 
 const createWorkflowSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   canvasJson: z
-    .record(z.any())
+    .record(z.unknown())
     .optional()
     .default({
       nodes: [],
@@ -68,7 +71,7 @@ export async function POST(req: Request) {
       data: {
         name,
         description: description || null,
-        canvasJson: canvasJson as any,
+        canvasJson: canvasJson as Prisma.InputJsonValue,
         userId: session.user.id,
       },
     });
