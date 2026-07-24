@@ -31,16 +31,29 @@ export type CustomNode = Node<{
   config: NodeConfig;
 }>;
 
+export interface NodeRunResult {
+  id: string;
+  nodeId: string;
+  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "SKIPPED";
+  input?: Record<string, unknown> | null;
+  output?: Record<string, unknown> | null;
+  errorMessage?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+}
+
 interface CanvasState {
   nodes: CustomNode[];
   edges: Edge[];
   selectedNodeId: string | null;
+  nodeRunResults: Map<string, NodeRunResult>;
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
 
   setNodes: (nodes: CustomNode[]) => void;
   setEdges: (edges: Edge[]) => void;
+  setNodeRunResults: (results: Map<string, NodeRunResult>) => void;
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
@@ -72,12 +85,14 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   nodes: [],
   edges: [],
   selectedNodeId: null,
+  nodeRunResults: new Map(),
   isLoading: false,
   isSaving: false,
   error: null,
 
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
+  setNodeRunResults: (nodeRunResults) => set({ nodeRunResults }),
 
   onNodesChange: (changes) =>
     set({
@@ -182,8 +197,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         edges: parsedCanvas.edges || [],
         isLoading: false,
       });
-    } catch (err: any) {
-      set({ error: err.message || "Error loading workflow", isLoading: false });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      set({ error: msg || "Error loading workflow", isLoading: false });
     }
   },
 
@@ -209,8 +225,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         throw new Error("Failed to save workflow");
       }
       set({ isSaving: false });
-    } catch (err: any) {
-      set({ error: err.message || "Error saving workflow", isSaving: false });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      set({ error: msg || "Error saving workflow", isSaving: false });
     }
   },
 }));
