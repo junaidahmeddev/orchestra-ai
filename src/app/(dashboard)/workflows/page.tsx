@@ -14,6 +14,7 @@ import {
   Trash2,
   AlertTriangle,
   Sparkles,
+  Workflow as WorkflowIcon,
 } from "lucide-react";
 
 interface Workflow {
@@ -31,7 +32,14 @@ export default function WorkflowsListPage() {
 
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [isLoadingWorkflows, setIsLoadingWorkflows] = useState(true);
+  
+  // Create Modal State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newWorkflowName, setNewWorkflowName] = useState("");
+  const [newWorkflowDesc, setNewWorkflowDesc] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  // Delete Modal State
   const [deletingWorkflowId, setDeletingWorkflowId] = useState<string | null>(null);
   const [workflowToDelete, setWorkflowToDelete] = useState<Workflow | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,16 +73,20 @@ export default function WorkflowsListPage() {
     }
   }, [status]);
 
-  const handleCreateWorkflow = async () => {
+  const handleCreateWorkflow = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsCreating(true);
     setError(null);
     try {
+      const finalName = newWorkflowName.trim() || "Untitled Workflow";
+      const finalDesc = newWorkflowDesc.trim() || "New visual AI automation pipeline";
+
       const res = await fetch("/api/workflows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: "Untitled Workflow",
-          description: "New visual AI automation pipeline",
+          name: finalName,
+          description: finalDesc,
         }),
       });
 
@@ -83,10 +95,14 @@ export default function WorkflowsListPage() {
       }
 
       const newWorkflow = await res.json();
+      setIsCreateModalOpen(false);
+      setNewWorkflowName("");
+      setNewWorkflowDesc("");
       router.push(`/workflows/${newWorkflow.id}`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg || "Failed to create workflow.");
+    } finally {
       setIsCreating(false);
     }
   };
@@ -128,106 +144,124 @@ export default function WorkflowsListPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
-      {/* Dashboard Header */}
-      <header className="border-b border-zinc-800 bg-zinc-900/40 px-8 py-4 backdrop-blur flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 p-0.5 shadow-md">
-            <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-zinc-950">
-              <span className="text-sm font-black text-teal-400">O</span>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-teal-500/20 selection:text-teal-300">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center space-x-3">
+            <Link
+              href="/"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 hover:bg-teal-500/20 transition-colors"
+            >
+              <WorkflowIcon className="h-5 w-5" />
+            </Link>
+            <div>
+              <Link href="/" className="font-bold text-lg text-zinc-100 tracking-tight hover:opacity-90">
+                orchestra<span className="text-teal-400">.ai</span>
+              </Link>
+              {session?.user?.email && (
+                <p className="text-xs text-zinc-500 font-mono">
+                  Logged in as: {session.user.email}
+                </p>
+              )}
             </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
-              orchestra.ai
-            </h1>
-            <p className="text-xs text-zinc-500">
-              Logged in as: {session?.user?.email}
-            </p>
+
+          <div className="flex items-center space-x-3">
+            <Link
+              href="/settings/api-keys"
+              className="inline-flex items-center space-x-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3.5 py-2 text-xs font-semibold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition-all"
+            >
+              <Key className="h-3.5 w-3.5 text-teal-400" />
+              <span>API Keys</span>
+            </Link>
+
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="inline-flex items-center space-x-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3.5 py-2 text-xs font-semibold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 hover:bg-zinc-800 transition-all"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Sign Out</span>
+            </button>
           </div>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <Link
-            href="/settings/api-keys"
-            className="inline-flex items-center space-x-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:text-zinc-50 px-3.5 py-2 text-xs font-semibold text-zinc-300 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500/40"
-          >
-            <Key className="h-3.5 w-3.5 text-teal-400" />
-            <span>API Keys</span>
-          </Link>
-
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="inline-flex items-center space-x-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:text-zinc-50 px-3.5 py-2 text-xs font-semibold text-zinc-400 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500/40"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            <span>Sign Out</span>
-          </button>
         </div>
       </header>
 
-      {/* Dashboard Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-8 py-10 space-y-8">
-        <div className="flex items-center justify-between">
+      {/* Main Content Area */}
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {/* Page Title Section */}
+        <div className="mb-8 flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-zinc-100">
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
               Workflows
-            </h2>
-            <p className="text-sm text-zinc-400 mt-1">
-              Create and manage your visual AI automation pipelines.
+            </h1>
+            <p className="mt-1 text-xs text-zinc-400">
+              Create, configure, and execute your visual node-based AI pipelines.
             </p>
           </div>
 
           <button
-            onClick={handleCreateWorkflow}
-            disabled={isCreating}
-            className="inline-flex items-center space-x-2 rounded-lg bg-teal-500 hover:bg-teal-400 px-4 py-2.5 text-sm font-semibold text-zinc-950 transition-colors disabled:opacity-50 shadow-md focus:outline-none focus:ring-2 focus:ring-teal-500/40"
+            onClick={() => {
+              setNewWorkflowName("");
+              setNewWorkflowDesc("");
+              setIsCreateModalOpen(true);
+            }}
+            className="inline-flex items-center space-x-2 rounded-xl bg-teal-500 hover:bg-teal-400 px-4 py-2.5 text-xs font-bold text-zinc-950 shadow-lg shadow-teal-500/10 transition-all"
           >
-            {isCreating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-            <span>{isCreating ? "Creating Workflow..." : "New Workflow"}</span>
+            <Plus className="h-4 w-4" />
+            <span>New Workflow</span>
           </button>
         </div>
 
+        {/* Global Error Banner */}
         {error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400 flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
+          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-xs font-medium text-red-300 flex items-center justify-between">
             <span>{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-400 hover:text-red-200"
+            >
+              Dismiss
+            </button>
           </div>
         )}
 
-        {/* Workflows List Grid */}
+        {/* Workflows List Grid / Empty State */}
         {isLoadingWorkflows ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-3">
-            <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
-            <p className="text-xs text-zinc-500">Fetching your workflows...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-44 rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6 animate-pulse space-y-4"
+              >
+                <div className="h-5 w-2/3 bg-zinc-800 rounded-md" />
+                <div className="h-3 w-5/6 bg-zinc-800/60 rounded-md" />
+                <div className="h-3 w-1/2 bg-zinc-800/60 rounded-md pt-4" />
+              </div>
+            ))}
           </div>
         ) : workflows.length === 0 ? (
           <div className="flex flex-col items-center justify-center border border-zinc-800 border-dashed rounded-2xl p-16 text-center space-y-4 bg-zinc-900/10">
-            <div className="rounded-full bg-zinc-900 border border-zinc-800 p-4 text-teal-400">
+            <div className="rounded-2xl bg-teal-500/10 border border-teal-500/20 p-4 text-teal-400 shadow-lg shadow-teal-500/10">
               <Sparkles className="h-8 w-8" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-semibold text-zinc-200">
+              <h3 className="text-base font-bold text-zinc-200">
                 No workflows created yet
               </h3>
-              <p className="text-xs text-zinc-500 max-w-sm">
+              <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">
                 Get started by creating your first visual node-based AI workflow canvas.
               </p>
             </div>
             <button
-              onClick={handleCreateWorkflow}
-              disabled={isCreating}
-              className="inline-flex items-center space-x-2 rounded-lg bg-teal-500 hover:bg-teal-400 px-4 py-2 text-xs font-semibold text-zinc-950 transition-colors disabled:opacity-50"
+              onClick={() => {
+                setNewWorkflowName("");
+                setNewWorkflowDesc("");
+                setIsCreateModalOpen(true);
+              }}
+              className="inline-flex items-center space-x-2 rounded-xl bg-teal-500 hover:bg-teal-400 px-5 py-2.5 text-xs font-bold text-zinc-950 transition-all shadow-md"
             >
-              {isCreating ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Plus className="h-3.5 w-3.5" />
-              )}
+              <Plus className="h-4 w-4" />
               <span>Create Your First Workflow</span>
             </button>
           </div>
@@ -236,13 +270,13 @@ export default function WorkflowsListPage() {
             {workflows.map((workflow) => (
               <div
                 key={workflow.id}
-                className="group relative border border-zinc-800 bg-zinc-900/20 rounded-2xl p-6 hover:border-zinc-700 transition-all flex flex-col justify-between hover:shadow-md hover:bg-zinc-900/30"
+                className="group relative border border-zinc-800/80 bg-zinc-900/30 rounded-2xl p-6 hover:border-teal-500/40 transition-all flex flex-col justify-between hover:shadow-lg hover:shadow-zinc-950/50 hover:bg-zinc-900/60"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between">
                     <Link
                       href={`/workflows/${workflow.id}`}
-                      className="font-semibold text-zinc-200 group-hover:text-teal-400 transition-colors line-clamp-1 flex-1 mr-2"
+                      className="font-bold text-base text-zinc-100 group-hover:text-teal-300 transition-colors line-clamp-1 flex-1 mr-2"
                     >
                       {workflow.name}
                     </Link>
@@ -251,21 +285,21 @@ export default function WorkflowsListPage() {
                         e.stopPropagation();
                         setWorkflowToDelete(workflow);
                       }}
-                      className="text-zinc-500 hover:text-red-400 p-1 rounded-md hover:bg-red-500/10 transition-colors"
+                      className="text-zinc-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
                       title="Delete Workflow"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
 
-                  <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">
+                  <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2">
                     {workflow.description || "No description provided."}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between text-zinc-600 mt-6 pt-4 border-t border-zinc-800/60 text-[11px]">
+                <div className="flex items-center justify-between text-zinc-500 mt-6 pt-4 border-t border-zinc-800/80 text-[11px]">
                   <div className="flex items-center space-x-1.5">
-                    <Calendar className="h-3.5 w-3.5" />
+                    <Calendar className="h-3.5 w-3.5 text-zinc-500" />
                     <span>
                       {new Date(workflow.updatedAt).toLocaleDateString()}
                     </span>
@@ -284,6 +318,86 @@ export default function WorkflowsListPage() {
         )}
       </main>
 
+      {/* Create Workflow Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="rounded-xl bg-teal-500/10 p-2.5 border border-teal-500/30 text-teal-400">
+                  <WorkflowIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-100">
+                    Create New Workflow
+                  </h3>
+                  <p className="text-xs text-zinc-400">
+                    Name your visual AI automation pipeline
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateWorkflow} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  Workflow Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Customer Support AI Agent"
+                  value={newWorkflowName}
+                  onChange={(e) => setNewWorkflowName(e.target.value)}
+                  autoFocus
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:border-teal-500/60 focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  Description (Optional)
+                </label>
+                <textarea
+                  placeholder="Short description of what this workflow does..."
+                  value={newWorkflowDesc}
+                  onChange={(e) => setNewWorkflowDesc(e.target.value)}
+                  rows={3}
+                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:border-teal-500/60 focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  disabled={isCreating}
+                  className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2.5 text-xs font-semibold text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isCreating}
+                  className="inline-flex items-center space-x-2 rounded-xl bg-teal-500 hover:bg-teal-400 px-5 py-2.5 text-xs font-bold text-zinc-950 transition-colors disabled:opacity-50 shadow-md"
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Creating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Create & Open Canvas</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {workflowToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4">
@@ -293,7 +407,7 @@ export default function WorkflowsListPage() {
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-zinc-100">
+                <h3 className="text-base font-bold text-zinc-100">
                   Delete Workflow?
                 </h3>
                 <p className="text-xs text-zinc-400">
@@ -302,7 +416,7 @@ export default function WorkflowsListPage() {
               </div>
             </div>
 
-            <p className="text-xs text-zinc-300 leading-relaxed bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+            <p className="text-xs text-zinc-300 leading-relaxed bg-zinc-950 p-3.5 rounded-xl border border-zinc-800">
               Are you sure you want to permanently delete{" "}
               <span className="font-semibold text-teal-400">
                 "{workflowToDelete.name}"
@@ -314,14 +428,14 @@ export default function WorkflowsListPage() {
               <button
                 onClick={() => setWorkflowToDelete(null)}
                 disabled={deletingWorkflowId === workflowToDelete.id}
-                className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-2 text-xs font-semibold text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteWorkflow}
                 disabled={deletingWorkflowId === workflowToDelete.id}
-                className="inline-flex items-center space-x-2 rounded-lg bg-red-600 hover:bg-red-500 px-4 py-2 text-xs font-semibold text-white transition-colors disabled:opacity-50"
+                className="inline-flex items-center space-x-2 rounded-xl bg-red-600 hover:bg-red-500 px-4 py-2 text-xs font-semibold text-white transition-colors disabled:opacity-50 shadow-md"
               >
                 {deletingWorkflowId === workflowToDelete.id ? (
                   <>

@@ -25,3 +25,106 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom Global Dark Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(18, 18, 20, 0.6);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(63, 63, 70, 0.7);
+  border-radius: 9999px;
+  border: 1px solid rgba(24, 24, 27, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(20, 184, 166, 0.8);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(63, 63, 70, 0.7) rgba(18, 18, 20, 0.6);
+}
+
+/* Specific Custom Dark Scrollbar Utility Class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(18, 18, 20, 0.6);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(63, 63, 70, 0.7);
+  border-radius: 9999px;
+  border: 1px solid rgba(24, 24, 27, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(20, 184, 166, 0.8);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(63, 63, 70, 0.7) rgba(18, 18, 20, 0.6);
+}
+
+/* Modern React Flow Dark Theme Overrides */
+.react-flow__controls {
+  background-color: rgba(24, 24, 27, 0.9) !important;
+  border: 1px solid rgba(63, 63, 70, 0.6) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.react-flow__controls-button {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(63, 63, 70, 0.4) !important;
+  fill: #a1a1aa !important;
+  color: #a1a1aa !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: rgba(39, 39, 42, 0.8) !important;
+  fill: #14b8a6 !important;
+  color: #14b8a6 !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+}
+
+.react-flow__minimap {
+  background-color: rgba(18, 18, 20, 0.9) !important;
+  border: 1px solid rgba(63, 63, 70, 0.6) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}

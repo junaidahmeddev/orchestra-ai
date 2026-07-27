@@ -6,23 +6,23 @@ import { CustomNode } from "@/store/canvasStore";
 export default function TriggerNode({ data, selected }: { data: CustomNode["data"]; selected: boolean }) {
   return (
     <div
-      className={`relative min-w-[200px] rounded-xl border bg-zinc-900 px-4 py-3 shadow-lg transition-all ${
-        selected ? "border-amber-500 ring-1 ring-amber-500" : "border-zinc-800"
+      className={`relative w-44 rounded-xl border bg-zinc-900/95 p-2.5 transition-all ${
+        selected
+          ? "border-amber-500 ring-2 ring-amber-500/30 shadow-[0_0_15px_-3px_rgba(245,158,11,0.3)]"
+          : "border-amber-500/40 shadow-[0_0_10px_-3px_rgba(245,158,11,0.1)] hover:border-amber-500/70"
       }`}
     >
-      <div className="absolute inset-x-0 -top-px h-1 rounded-t-xl bg-gradient-to-r from-amber-500 to-orange-500" />
-      
-      <div className="flex items-center space-x-2 pb-1.5 border-b border-zinc-800/80">
-        <div className="rounded-lg bg-amber-500/10 p-1.5 text-amber-500">
-          <Play className="h-4 w-4 fill-amber-500/20" />
+      <div className="flex items-center space-x-1.5 pb-1.5 border-b border-zinc-800/80">
+        <div className="rounded bg-amber-500/10 p-1 text-amber-400 border border-amber-500/20 shadow-sm">
+          <Play className="h-3 w-3 fill-amber-400/20" />
         </div>
-        <span className="text-sm font-semibold text-zinc-100">{data.label}</span>
+        <span className="text-[11px] font-bold text-zinc-100 tracking-tight truncate">{data.label}</span>
       </div>
 
-      <div className="mt-2.5 space-y-1 text-xs text-zinc-400">
-        <div>
-          <span className="font-medium text-zinc-500">Trigger Type:</span>{" "}
-          <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-amber-400 font-mono">
+      <div className="mt-1.5 space-y-1 text-[10px] text-zinc-400">
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-zinc-400">Trigger Type:</span>
+          <span className="rounded bg-amber-500/10 border border-amber-500/20 px-1 py-0.5 text-amber-300 font-mono text-[9px] font-bold">
             {data.config.triggerType || "MANUAL"}
           </span>
         </div>
@@ -31,7 +31,7 @@ export default function TriggerNode({ data, selected }: { data: CustomNode["data
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 !bg-amber-500 border-2 border-zinc-900"
+        className="!w-2.5 !h-2.5 !bg-amber-500 border-2 border-zinc-950 hover:scale-125 transition-transform cursor-crosshair shadow-md"
       />
     </div>
   );

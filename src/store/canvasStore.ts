@@ -45,6 +45,7 @@ export interface NodeRunResult {
 interface CanvasState {
   nodes: CustomNode[];
   edges: Edge[];
+  workflowName: string;
   selectedNodeId: string | null;
   nodeRunResults: Map<string, NodeRunResult>;
   isLoading: boolean;
@@ -53,6 +54,8 @@ interface CanvasState {
 
   setNodes: (nodes: CustomNode[]) => void;
   setEdges: (edges: Edge[]) => void;
+  setWorkflowName: (name: string) => void;
+  updateWorkflowName: (workflowId: string, name: string) => Promise<void>;
   setNodeRunResults: (results: Map<string, NodeRunResult>) => void;
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -71,19 +74,34 @@ const getDefaultConfig = (type: CustomNode["data"]["type"]): NodeConfig => {
     case "TRIGGER":
       return { triggerType: "MANUAL" };
     case "AI_ENGINE":
-      return { provider: "OPENAI", model: "gpt-4o", systemPrompt: "You are a helpful assistant.", temperature: 0.7 };
+      return {
+        provider: "GEMINI",
+        model: "gemini-3.6-flash",
+        systemPrompt: "You are a helpful AI assistant.",
+        temperature: 0.7,
+      };
     case "DATA_PROCESSOR":
-      return { language: "javascript", code: "// Process inputs here\nreturn input;" };
+      return {
+        language: "javascript",
+        code: "// Custom data transformation\nreturn input;",
+      };
     case "INTEGRATION":
-      return { service: "webhook", endpoint: "https://api.example.com", method: "POST" };
+      return {
+        service: "Webhook",
+        endpoint: "https://httpbin.org/post",
+        method: "POST",
+      };
     case "OUTPUT":
       return { format: "json" };
+    default:
+      return {};
   }
 };
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   nodes: [],
   edges: [],
+  workflowName: "Untitled Workflow",
   selectedNodeId: null,
   nodeRunResults: new Map(),
   isLoading: false,
@@ -92,31 +110,61 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
-  setNodeRunResults: (nodeRunResults) => set({ nodeRunResults }),
+  setWorkflowName: (name) => set({ workflowName: name }),
 
-  onNodesChange: (changes) =>
+  updateWorkflowName: async (workflowId, name) => {
+    const trimmed = name.trim() || "Untitled Workflow";
+    set({ workflowName: trimmed });
+    try {
+      await fetch(`/api/workflows/${workflowId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed }),
+      });
+    } catch (err) {
+      console.error("Failed to update workflow name:", err);
+    }
+  },
+
+  setNodeRunResults: (results) => set({ nodeRunResults: results }),
+
+  onNodesChange: (changes) => {
     set({
       nodes: applyNodeChanges(changes, get().nodes) as CustomNode[],
-    }),
+    });
+  },
 
-  onEdgesChange: (changes) =>
+  onEdgesChange: (changes) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
-    }),
+    });
+  },
 
-  onConnect: (connection) =>
+  onConnect: (connection) => {
     set({
-      edges: addEdge(connection, get().edges),
-    }),
+      edges: addEdge(
+        { ...connection, animated: true, style: { stroke: "#14b8a6" } },
+        get().edges
+      ),
+    });
+  },
 
   addNode: (type, position) => {
-    const id = `${type.toLowerCase()}_${Date.now()}`;
+    const id = `node_${Date.now()}`;
+    const labels: Record<CustomNode["data"]["type"], string> = {
+      TRIGGER: "Manual Trigger",
+      AI_ENGINE: "Gemini AI Engine",
+      DATA_PROCESSOR: "JS Code Transformer",
+      INTEGRATION: "REST Webhook",
+      OUTPUT: "JSON Response",
+    };
+
     const newNode: CustomNode = {
       id,
-      type: "customNode",
+      type,
       position,
       data: {
-        label: `${type.charAt(0) + type.slice(1).toLowerCase().replace("_", " ")} Node`,
+        label: labels[type] || type,
         type,
         config: getDefaultConfig(type),
       },
@@ -124,6 +172,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     set({
       nodes: [...get().nodes, newNode],
+      selectedNodeId: id,
     });
   },
 
@@ -135,10 +184,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             ...node,
             data: {
               ...node.data,
-              config: {
-                ...node.data.config,
-                ...config,
-              },
+              config: { ...node.data.config, ...config },
             },
           };
         }
@@ -170,7 +216,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       edges: get().edges.filter(
         (edge) => edge.source !== nodeId && edge.target !== nodeId
       ),
-      selectedNodeId: get().selectedNodeId === nodeId ? null : get().selectedNodeId,
+      selectedNodeId:
+        get().selectedNodeId === nodeId ? null : get().selectedNodeId,
     });
   },
 
@@ -195,6 +242,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       set({
         nodes: parsedCanvas.nodes || [],
         edges: parsedCanvas.edges || [],
+        workflowName: data.name || "Untitled Workflow",
         isLoading: false,
       });
     } catch (err: unknown) {
@@ -217,6 +265,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          name: get().workflowName,
           canvasJson,
         }),
       });
