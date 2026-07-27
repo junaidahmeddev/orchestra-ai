@@ -157,7 +157,7 @@ export default function FlowCanvas({ nodeStatuses }: FlowCanvasProps) {
   }, [selectNode]);
 
   return (
-    <div className="relative flex-1 h-full bg-zinc-950 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-zinc-900/40 via-zinc-950 to-zinc-950" ref={reactFlowWrapper}>
+    <div className="relative flex-1 h-full bg-[#090D16] bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]" ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -172,43 +172,43 @@ export default function FlowCanvas({ nodeStatuses }: FlowCanvasProps) {
         nodeTypes={nodeTypes}
         defaultEdgeOptions={{
           animated: true,
-          style: { stroke: "#14b8a6", strokeWidth: 2 },
+          style: { stroke: "#06b6d4", strokeWidth: 2.5 },
         }}
         deleteKeyCode={["Backspace", "Delete"]}
         fitView
         fitViewOptions={{ maxZoom: 1, padding: 0.25 }}
         className="w-full h-full"
       >
-        {/* Intentional Figma-style Dot Grid */}
+        {/* Clean Subtle Dot Grid Background */}
         <Background
           variant={BackgroundVariant.Dots}
-          color="#3f3f46"
+          color="#334155"
           gap={20}
           size={1.2}
         />
 
         {/* Polished Controls */}
-        <Controls className="!bg-zinc-900/90 !border-zinc-800/80 !text-zinc-100 fill-zinc-100 [&>button]:!border-zinc-800/80 [&>button]:hover:!bg-zinc-800 !rounded-xl !shadow-xl overflow-hidden backdrop-blur-md" />
+        <Controls className="!bg-slate-900/80 !border-slate-800 !text-slate-100 fill-slate-100 [&>button]:!border-slate-800 [&>button]:hover:!bg-slate-800 !rounded-xl !shadow-2xl overflow-hidden backdrop-blur-xl" />
 
-        {/* Styled Minimap with Label */}
+        {/* Styled Minimap */}
         <MiniMap
           nodeColor={(n) => {
             const type = n.data?.type;
             if (type === "TRIGGER") return "#f59e0b";
-            if (type === "AI_ENGINE") return "#8b5cf6";
+            if (type === "AI_ENGINE") return "#6366f1";
             if (type === "DATA_PROCESSOR") return "#3b82f6";
-            if (type === "INTEGRATION") return "#10b981";
-            if (type === "OUTPUT") return "#ef4444";
-            return "#3f3f46";
+            if (type === "INTEGRATION") return "#14b8a6";
+            if (type === "OUTPUT") return "#10b981";
+            return "#475569";
           }}
-          maskColor="rgba(9, 9, 11, 0.75)"
-          className="!bg-zinc-900/90 !border !border-zinc-800/80 !rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md"
+          maskColor="rgba(9, 13, 22, 0.85)"
+          className="!bg-slate-900/80 !border !border-slate-800 !rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl"
         />
 
         {/* Top-Left Instructions Panel */}
-        <Panel position="top-left" className="bg-zinc-900/90 border border-zinc-800/80 backdrop-blur-md px-3.5 py-2 rounded-xl text-xs text-zinc-300 shadow-xl flex items-center space-x-2">
-          <Info className="h-3.5 w-3.5 text-teal-400 shrink-0" />
-          <span>Drag nodes from palette, connect handles, and click <strong className="text-teal-400">Run Workflow</strong> to execute live.</span>
+        <Panel position="top-left" className="bg-[#0F172A]/70 border border-slate-800/80 backdrop-blur-xl px-3.5 py-2 rounded-xl text-xs text-slate-300 shadow-2xl flex items-center space-x-2">
+          <Info className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+          <span>Drag nodes from palette, connect handles, and click <strong className="text-cyan-400 font-bold">Run Workflow</strong> to execute live.</span>
         </Panel>
       </ReactFlow>
     </div>
