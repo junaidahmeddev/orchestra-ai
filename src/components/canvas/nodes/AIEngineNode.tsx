@@ -15,7 +15,6 @@ export default function AIEngineNode({
   const nodeRunResults = useCanvasStore((state) => state.nodeRunResults);
   const runResult = nodeRunResults.get(id);
 
-  // Extract preview text from output object
   const getPreviewText = () => {
     if (!runResult?.output) return "";
     const out = runResult.output as Record<string, unknown>;
@@ -26,8 +25,8 @@ export default function AIEngineNode({
     else if (typeof out.output === "string") text = out.output;
     else text = JSON.stringify(out);
 
-    if (text.length > 100) {
-      return text.slice(0, 100) + "...";
+    if (text.length > 60) {
+      return text.slice(0, 60) + "...";
     }
     return text;
   };
@@ -36,67 +35,59 @@ export default function AIEngineNode({
 
   return (
     <div
-      className={`relative min-w-[220px] max-w-[280px] rounded-xl border bg-zinc-900 px-4 py-3 shadow-lg transition-all ${
-        selected ? "border-violet-500 ring-1 ring-violet-500" : "border-zinc-800"
+      className={`relative w-48 rounded-xl border bg-zinc-900/95 p-2.5 transition-all ${
+        selected
+          ? "border-violet-500 ring-2 ring-violet-500/30 shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]"
+          : "border-violet-500/40 shadow-[0_0_10px_-3px_rgba(139,92,246,0.1)] hover:border-violet-500/70"
       }`}
     >
-      <div className="absolute inset-x-0 -top-px h-1 rounded-t-xl bg-gradient-to-r from-violet-500 to-purple-500" />
-
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 !bg-violet-500 border-2 border-zinc-900"
+        className="!w-2.5 !h-2.5 !bg-violet-500 border-2 border-zinc-950 hover:scale-125 transition-transform cursor-crosshair shadow-md"
       />
 
-      <div className="flex items-center space-x-2 pb-1.5 border-b border-zinc-800/80">
-        <div className="rounded-lg bg-violet-500/10 p-1.5 text-violet-500">
-          <Sparkles className="h-4 w-4 fill-violet-500/20" />
+      <div className="flex items-center space-x-1.5 pb-1.5 border-b border-zinc-800/80">
+        <div className="rounded bg-violet-500/10 p-1 text-violet-400 border border-violet-500/20 shadow-sm">
+          <Sparkles className="h-3 w-3 fill-violet-400/20" />
         </div>
-        <span className="text-sm font-semibold text-zinc-100">{data.label}</span>
+        <span className="text-[11px] font-bold text-zinc-100 tracking-tight truncate">{data.label}</span>
       </div>
 
-      <div className="mt-2.5 space-y-1.5 text-xs text-zinc-400">
-        <div className="flex justify-between">
-          <span className="text-zinc-500">LLM Provider:</span>
-          <span className="font-mono text-zinc-300">
+      <div className="mt-1.5 space-y-1 text-[10px] text-zinc-400">
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-zinc-400">Provider:</span>
+          <span className="font-mono text-zinc-200 font-semibold bg-zinc-950 px-1 py-0.5 rounded border border-zinc-800/80 text-[9px]">
             {data.config.provider || "GEMINI"}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Model:</span>
-          <span className="font-mono text-zinc-300">
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-zinc-400">Model:</span>
+          <span className="font-mono text-violet-300 font-semibold bg-violet-500/10 px-1 py-0.5 rounded border border-violet-500/20 text-[9px] truncate max-w-[100px]">
             {data.config.model || "gemini-3.6-flash"}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Temperature:</span>
-          <span className="font-mono text-zinc-300">
-            {data.config.temperature ?? 0.7}
-          </span>
-        </div>
 
-        {/* Live Gemini Response Preview Card */}
         {runResult?.status === "SUCCESS" && previewText && (
-          <div className="mt-2 space-y-1 rounded-lg border border-violet-500/30 bg-violet-950/20 p-2.5">
-            <div className="flex items-center space-x-1.5 text-[10px] font-semibold text-violet-400 uppercase tracking-wider">
-              <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-400" />
-              <span>AI Response Preview</span>
+          <div className="pt-1.5 mt-1.5 border-t border-zinc-800/80 space-y-0.5 rounded border border-violet-500/30 bg-zinc-950/80 p-1.5 shadow-inner">
+            <div className="flex items-center space-x-1 text-[8px] font-bold text-violet-400 uppercase tracking-widest">
+              <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
+              <span>AI Response</span>
             </div>
-            <p className="font-mono text-[11px] leading-relaxed text-zinc-200 line-clamp-3 whitespace-pre-wrap">
+            <p className="font-mono text-[9px] leading-relaxed text-zinc-300 line-clamp-2">
               {previewText}
             </p>
           </div>
         )}
 
-        {/* Live Error Banner */}
         {runResult?.status === "FAILED" && (
-          <div className="mt-2 space-y-1 rounded-lg border border-red-500/40 bg-red-950/40 p-2.5">
-            <div className="flex items-center space-x-1.5 text-[10px] font-semibold text-red-400 uppercase tracking-wider">
-              <AlertTriangle className="h-3 w-3 shrink-0" />
+          <div className="pt-1.5 mt-1.5 border-t border-zinc-800/80 space-y-0.5 rounded border border-red-500/40 bg-red-950/30 p-1.5">
+            <div className="flex items-center space-x-1 text-[8px] font-bold text-red-400 uppercase tracking-widest">
+              <AlertTriangle className="h-2.5 w-2.5" />
               <span>Error</span>
             </div>
-            <p className="font-mono text-[11px] leading-relaxed text-red-300 line-clamp-2">
-              {runResult.errorMessage || "Node execution failed"}
+            <p className="font-mono text-[9px] leading-relaxed text-red-300 line-clamp-2">
+              {runResult.errorMessage || "Node failed"}
             </p>
           </div>
         )}
@@ -105,7 +96,7 @@ export default function AIEngineNode({
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 !bg-violet-500 border-2 border-zinc-900"
+        className="!w-2.5 !h-2.5 !bg-violet-500 border-2 border-zinc-950 hover:scale-125 transition-transform cursor-crosshair shadow-md"
       />
     </div>
   );

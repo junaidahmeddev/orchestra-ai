@@ -15,6 +15,7 @@ import {
   Copy,
   Check,
   AlertTriangle,
+  GripVertical,
 } from "lucide-react";
 
 export function LeftSidebar() {
@@ -29,64 +30,79 @@ export function LeftSidebar() {
       label: "Trigger Node",
       description: "Start workflow manually, via webhook, or on a schedule.",
       icon: Play,
-      colorClass: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+      colorClass: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+      hoverBorder: "group-hover:border-amber-500/50 hover:shadow-amber-500/5",
     },
     {
       type: "AI_ENGINE",
       label: "AI Engine Node",
       description: "Execute a prompt with OpenAI, Anthropic, or Gemini.",
       icon: Sparkles,
-      colorClass: "text-violet-500 bg-violet-500/10 border-violet-500/20",
+      colorClass: "text-violet-400 bg-violet-500/10 border-violet-500/30",
+      hoverBorder: "group-hover:border-violet-500/50 hover:shadow-violet-500/5",
     },
     {
       type: "DATA_PROCESSOR",
       label: "Data Processor Node",
       description: "Run custom JavaScript or Python code snippets.",
       icon: Code2,
-      colorClass: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+      colorClass: "text-blue-400 bg-blue-500/10 border-blue-500/30",
+      hoverBorder: "group-hover:border-blue-500/50 hover:shadow-blue-500/5",
     },
     {
       type: "INTEGRATION",
       label: "Integration Node",
       description: "Trigger external webhooks or REST API calls.",
       icon: Link2,
-      colorClass: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+      colorClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+      hoverBorder: "group-hover:border-emerald-500/50 hover:shadow-emerald-500/5",
     },
     {
       type: "OUTPUT",
       label: "Output Node",
       description: "Render the final result in custom formatting.",
       icon: ArrowRightToLine,
-      colorClass: "text-red-500 bg-red-500/10 border-red-500/20",
+      colorClass: "text-red-400 bg-red-500/10 border-red-500/30",
+      hoverBorder: "group-hover:border-red-500/50 hover:shadow-red-500/5",
     },
   ];
 
   return (
-    <aside className="w-80 border-r border-zinc-800 bg-zinc-900/40 p-5 flex flex-col h-full overflow-y-auto">
+    <aside className="w-64 border-r border-zinc-800/80 bg-zinc-900/50 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-md custom-scrollbar">
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-zinc-100 uppercase tracking-wider">Node Palette</h3>
-        <p className="text-xs text-zinc-500 mt-1">Drag nodes onto the canvas to construct your AI workflow.</p>
+        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+          Node Palette
+        </h3>
+        <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+          Drag nodes onto the canvas to construct your AI workflow.
+        </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {paletteItems.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.type}
-              className="group cursor-grab border border-zinc-800 bg-zinc-900/50 p-4 rounded-xl hover:border-zinc-700 active:cursor-grabbing transition-all hover:shadow-md"
+              className={`group cursor-grab border border-zinc-800/80 bg-gradient-to-b from-zinc-900/90 to-zinc-950 p-3 rounded-xl hover:bg-zinc-900 active:cursor-grabbing transition-all hover:shadow-lg hover:-translate-y-0.5 relative ${item.hoverBorder}`}
               onDragStart={(event) => onDragStart(event, item.type)}
               draggable
             >
-              <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-lg border ${item.colorClass}`}>
-                  <Icon className="h-4 w-4" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2.5">
+                  <div className={`p-1.5 rounded-lg border shadow-sm ${item.colorClass}`}>
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="text-xs font-bold text-zinc-200 group-hover:text-zinc-100 transition-colors">
+                    {item.label}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-zinc-200 group-hover:text-zinc-100">
-                  {item.label}
-                </span>
+                <div className="opacity-0 group-hover:opacity-100 transition-all flex items-center space-x-1 text-[10px] font-semibold text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800/80 shadow-sm">
+                  <GripVertical className="h-3 w-3" />
+                  <span>+ Drag</span>
+                </div>
               </div>
-              <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+              <p className="text-[11px] text-zinc-500 mt-2 leading-relaxed">
                 {item.description}
               </p>
             </div>
@@ -112,14 +128,16 @@ export function RightSidebar() {
   const [copied, setCopied] = React.useState(false);
 
   const selectedNode = nodes.find((n: CustomNode) => n.id === selectedNodeId);
-
-  // Auto-switch to result tab if runResult exists and status changed
   const runResult = selectedNode ? nodeRunResults.get(selectedNode.id) : undefined;
 
   if (!selectedNode) {
     return (
-      <aside className="w-80 border-l border-zinc-800 bg-zinc-900/40 p-5 flex flex-col h-full items-center justify-center text-zinc-500 text-center">
-        <p className="text-sm">Select a node on the canvas to configure its settings or inspect output results.</p>
+      <aside className="w-64 border-l border-zinc-800/80 bg-zinc-900/50 p-4 flex flex-col h-full items-center justify-center text-zinc-500 text-center shrink-0 z-10 backdrop-blur-md">
+        <div className="rounded-2xl border border-dashed border-zinc-800 p-6 max-w-xs bg-zinc-950/40">
+          <p className="text-xs leading-relaxed">
+            Select a node on the canvas to configure its settings or inspect live output results.
+          </p>
+        </div>
       </aside>
     );
   }
@@ -150,219 +168,247 @@ export function RightSidebar() {
   const formattedOutputText = getFormattedOutput();
 
   return (
-    <aside className="w-80 border-l border-zinc-800 bg-zinc-900/40 p-5 flex flex-col h-full overflow-y-auto">
+    <aside className="w-64 border-l border-zinc-800/80 bg-zinc-900/50 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-md custom-scrollbar">
       {/* Sidebar Header */}
-      <div className="pb-4 border-b border-zinc-800 flex justify-between items-center mb-4">
+      <div className="pb-4 border-b border-zinc-800/80 flex justify-between items-center mb-5">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-100 uppercase tracking-wider">Properties</h3>
-          <span className="text-xs text-zinc-500 uppercase">{type.replace("_", " ")}</span>
+          <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+            Properties
+          </h3>
+          <span className="text-xs font-semibold text-teal-400 uppercase tracking-wider">
+            {type.replace("_", " ")}
+          </span>
         </div>
         <button
           onClick={() => deleteNode(selectedNode.id)}
-          className="p-2 rounded-lg bg-red-950/20 text-red-400 hover:bg-red-950/50 border border-red-900/30 hover:border-red-800 transition-colors"
+          className="p-2 rounded-xl bg-red-950/30 text-red-400 hover:bg-red-900/40 border border-red-800/40 hover:border-red-700/60 transition-all shadow-sm"
           title="Delete Node"
         >
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="flex rounded-lg bg-zinc-950 p-1 border border-zinc-800 mb-6">
+      {/* Modern Segmented Control Tab Switcher */}
+      <div className="flex rounded-2xl bg-zinc-950 p-1.5 border border-zinc-800/80 mb-6 shadow-inner">
         <button
           onClick={() => setActiveTab("config")}
-          className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+          className={`flex-1 py-2 text-xs rounded-xl transition-all ${
             activeTab === "config"
-              ? "bg-zinc-800 text-zinc-100 shadow-sm"
-              : "text-zinc-500 hover:text-zinc-300"
+              ? "bg-zinc-800 text-zinc-100 font-bold shadow-md border border-zinc-700/60"
+              : "text-zinc-400 hover:text-zinc-200 font-semibold"
           }`}
         >
           Config
         </button>
         <button
           onClick={() => setActiveTab("result")}
-          className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center justify-center space-x-1.5 ${
+          className={`flex-1 py-2 text-xs rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
             activeTab === "result"
-              ? "bg-zinc-800 text-zinc-100 shadow-sm"
-              : "text-zinc-500 hover:text-zinc-300"
+              ? "bg-zinc-800 text-zinc-100 font-bold shadow-md border border-zinc-700/60"
+              : "text-zinc-400 hover:text-zinc-200 font-semibold"
           }`}
         >
           <span>Result</span>
           {runResult?.status === "SUCCESS" && (
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
           )}
           {runResult?.status === "FAILED" && (
-            <span className="h-2 w-2 rounded-full bg-red-400" />
+            <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
           )}
         </button>
       </div>
 
       {/* Tab 1: Node Config */}
       {activeTab === "config" && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Node Label */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Node Name</label>
+            <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+              Node Name
+            </label>
             <input
               type="text"
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-teal-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-medium text-zinc-200 placeholder-zinc-600 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
               value={label}
               onChange={(e) => updateNodeLabel(selectedNode.id, e.target.value)}
             />
           </div>
 
-        {/* Dynamic configuration options based on Node Type */}
-        {type === "TRIGGER" && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Source Type</label>
-              <select
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none"
-                value={config.triggerType || "MANUAL"}
-                onChange={(e) => handleConfigChange("triggerType", e.target.value)}
-              >
-                <option value="MANUAL">Manual Trigger</option>
-                <option value="WEBHOOK">Webhook URL</option>
-                <option value="CRON">Cron Scheduler</option>
-              </select>
-            </div>
-          </div>
-        )}
-
-        {type === "AI_ENGINE" && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Provider</label>
-              <select
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none"
-                value={config.provider || "OPENAI"}
-                onChange={(e) => handleConfigChange("provider", e.target.value)}
-              >
-                <option value="OPENAI">OpenAI</option>
-                <option value="ANTHROPIC">Anthropic</option>
-                <option value="GEMINI">Gemini</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Model</label>
-              <input
-                type="text"
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none"
-                value={config.model || "gpt-4o"}
-                onChange={(e) => handleConfigChange("model", e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">System Prompt</label>
-              <textarea
-                rows={4}
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none resize-none"
-                value={config.systemPrompt || ""}
-                onChange={(e) => handleConfigChange("systemPrompt", e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Temperature</label>
-                <span className="text-xs text-teal-400 font-mono">{config.temperature ?? 0.7}</span>
+          {/* Dynamic configuration options based on Node Type */}
+          {type === "TRIGGER" && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Source Type
+                </label>
+                <select
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-medium text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.triggerType || "MANUAL"}
+                  onChange={(e) => handleConfigChange("triggerType", e.target.value)}
+                >
+                  <option value="MANUAL">Manual Trigger</option>
+                  <option value="WEBHOOK">Webhook URL</option>
+                  <option value="CRON">Cron Scheduler</option>
+                </select>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                className="w-full accent-teal-500"
-                value={config.temperature ?? 0.7}
-                onChange={(e) => handleConfigChange("temperature", parseFloat(e.target.value))}
-              />
             </div>
-          </div>
-        )}
+          )}
 
-        {type === "DATA_PROCESSOR" && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Language</label>
-              <select
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none"
-                value={config.language || "javascript"}
-                onChange={(e) => handleConfigChange("language", e.target.value)}
-              >
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-              </select>
-            </div>
+          {type === "AI_ENGINE" && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Provider
+                </label>
+                <select
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-medium text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.provider || "GEMINI"}
+                  onChange={(e) => handleConfigChange("provider", e.target.value)}
+                >
+                  <option value="OPENAI">OpenAI</option>
+                  <option value="ANTHROPIC">Anthropic</option>
+                  <option value="GEMINI">Gemini</option>
+                </select>
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Code Snippet</label>
-              <textarea
-                rows={10}
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-xs font-mono text-zinc-200 focus:border-teal-500 focus:outline-none resize-none"
-                value={config.code || ""}
-                onChange={(e) => handleConfigChange("code", e.target.value)}
-              />
-            </div>
-          </div>
-        )}
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Model
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-mono text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.model || "gemini-3.6-flash"}
+                  onChange={(e) => handleConfigChange("model", e.target.value)}
+                />
+              </div>
 
-        {type === "INTEGRATION" && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Method</label>
-              <select
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none"
-                value={config.method || "POST"}
-                onChange={(e) => handleConfigChange("method", e.target.value)}
-              >
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-              </select>
-            </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  System Prompt
+                </label>
+                <textarea
+                  rows={4}
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 p-3.5 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all resize-none leading-relaxed"
+                  value={config.systemPrompt || ""}
+                  onChange={(e) => handleConfigChange("systemPrompt", e.target.value)}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Endpoint URL</label>
-              <input
-                type="text"
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none"
-                value={config.endpoint || ""}
-                onChange={(e) => handleConfigChange("endpoint", e.target.value)}
-              />
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                    Temperature
+                  </label>
+                  <span className="text-xs text-teal-400 font-mono font-bold">
+                    {config.temperature ?? 0.7}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  className="w-full accent-teal-500"
+                  value={config.temperature ?? 0.7}
+                  onChange={(e) => handleConfigChange("temperature", parseFloat(e.target.value))}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {type === "OUTPUT" && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Response Format</label>
-              <select
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:border-teal-500 focus:outline-none"
-                value={config.format || "json"}
-                onChange={(e) => handleConfigChange("format", e.target.value)}
-              >
-                <option value="json">JSON Object</option>
-                <option value="markdown">Markdown Text</option>
-                <option value="plain_text">Plain Text</option>
-              </select>
+          {type === "DATA_PROCESSOR" && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Language
+                </label>
+                <select
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-medium text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.language || "javascript"}
+                  onChange={(e) => handleConfigChange("language", e.target.value)}
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="python">Python</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Code Snippet
+                </label>
+                <textarea
+                  rows={10}
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 p-3.5 text-xs font-mono text-cyan-300 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all resize-none leading-relaxed"
+                  value={config.code || ""}
+                  onChange={(e) => handleConfigChange("code", e.target.value)}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {type === "INTEGRATION" && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Method
+                </label>
+                <select
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-medium text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.method || "POST"}
+                  onChange={(e) => handleConfigChange("method", e.target.value)}
+                >
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Endpoint URL
+                </label>
+                <input
+                  type="text"
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-mono text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.endpoint || ""}
+                  onChange={(e) => handleConfigChange("endpoint", e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          {type === "OUTPUT" && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Response Format
+                </label>
+                <select
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-medium text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.format || "json"}
+                  onChange={(e) => handleConfigChange("format", e.target.value)}
+                >
+                  <option value="json">JSON Object</option>
+                  <option value="markdown">Markdown Text</option>
+                  <option value="plain_text">Plain Text</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Tab 2: Execution Result */}
       {activeTab === "result" && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {!runResult ? (
-            <div className="flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-xl p-8 text-center space-y-3 bg-zinc-950/40">
+            <div className="flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-2xl p-8 text-center space-y-3 bg-zinc-950/40">
               <Code2 className="h-8 w-8 text-zinc-600" />
               <div className="space-y-1">
                 <p className="text-xs font-semibold text-zinc-300">No execution data yet</p>
-                <p className="text-[11px] text-zinc-500">
+                <p className="text-[11px] text-zinc-500 leading-relaxed">
                   Click <span className="text-teal-400 font-semibold">"Run Workflow"</span> in the header to execute this node and view live outputs.
                 </p>
               </div>
@@ -370,30 +416,30 @@ export function RightSidebar() {
           ) : (
             <div className="space-y-4">
               {/* Execution Status Banner */}
-              <div className="flex items-center justify-between border border-zinc-800 bg-zinc-950 rounded-xl p-3">
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              <div className="flex items-center justify-between border border-zinc-800/80 bg-zinc-950 rounded-2xl p-3.5 shadow-sm">
+                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
                   Status
                 </span>
                 {runResult.status === "SUCCESS" && (
-                  <span className="inline-flex items-center space-x-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-400">
+                  <span className="inline-flex items-center space-x-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 text-xs font-bold text-emerald-400">
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     <span>SUCCESS</span>
                   </span>
                 )}
                 {runResult.status === "FAILED" && (
-                  <span className="inline-flex items-center space-x-1.5 rounded-md bg-red-500/10 border border-red-500/20 px-2.5 py-1 text-xs font-semibold text-red-400">
+                  <span className="inline-flex items-center space-x-1.5 rounded-lg bg-red-500/10 border border-red-500/30 px-2.5 py-1 text-xs font-bold text-red-400">
                     <XCircle className="h-3.5 w-3.5" />
                     <span>FAILED</span>
                   </span>
                 )}
                 {runResult.status === "RUNNING" && (
-                  <span className="inline-flex items-center space-x-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 text-xs font-semibold text-blue-400">
+                  <span className="inline-flex items-center space-x-1.5 rounded-lg bg-blue-500/10 border border-blue-500/30 px-2.5 py-1 text-xs font-bold text-blue-400">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     <span>RUNNING</span>
                   </span>
                 )}
                 {runResult.status === "PENDING" && (
-                  <span className="inline-flex items-center space-x-1.5 rounded-md bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-400">
+                  <span className="inline-flex items-center space-x-1.5 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-400">
                     PENDING
                   </span>
                 )}
@@ -403,7 +449,7 @@ export function RightSidebar() {
               {runResult.status === "SUCCESS" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
                       Node Output Result
                     </span>
                     {formattedOutputText && (
@@ -414,7 +460,7 @@ export function RightSidebar() {
                         {copied ? (
                           <>
                             <Check className="h-3.5 w-3.5 text-emerald-400" />
-                            <span className="text-emerald-400">Copied</span>
+                            <span className="text-emerald-400 font-semibold">Copied</span>
                           </>
                         ) : (
                           <>
@@ -427,7 +473,7 @@ export function RightSidebar() {
                   </div>
 
                   {formattedOutputText ? (
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 space-y-3">
+                    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950 p-3.5 space-y-3 shadow-inner">
                       <div className="max-h-72 overflow-y-auto font-mono text-xs text-zinc-200 leading-relaxed whitespace-pre-wrap selection:bg-teal-500 selection:text-zinc-950">
                         {formattedOutputText}
                       </div>
@@ -448,7 +494,7 @@ export function RightSidebar() {
                     </button>
 
                     {showRawJson && (
-                      <div className="mt-2 rounded-lg border border-zinc-800 bg-zinc-950 p-3 max-h-48 overflow-y-auto font-mono text-[11px] text-teal-400">
+                      <div className="mt-2 rounded-xl border border-zinc-800/80 bg-zinc-950 p-3 max-h-48 overflow-y-auto font-mono text-[11px] text-teal-400">
                         <pre>{JSON.stringify(runResult.output, null, 2)}</pre>
                       </div>
                     )}
@@ -458,8 +504,8 @@ export function RightSidebar() {
 
               {/* FAILED State Error Container */}
               {runResult.status === "FAILED" && (
-                <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 space-y-2">
-                  <div className="flex items-center space-x-2 text-red-400 font-semibold text-xs uppercase tracking-wider">
+                <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 space-y-2">
+                  <div className="flex items-center space-x-2 text-red-400 font-bold text-xs uppercase tracking-wider">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
                     <span>Node Execution Error</span>
                   </div>

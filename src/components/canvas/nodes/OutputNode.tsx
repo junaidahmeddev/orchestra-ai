@@ -1,6 +1,6 @@
 import React from "react";
 import { Handle, Position } from "reactflow";
-import { ArrowRightToLine, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowRightToLine, CheckCircle2 } from "lucide-react";
 import { CustomNode, useCanvasStore } from "@/store/canvasStore";
 
 export default function OutputNode({
@@ -15,7 +15,6 @@ export default function OutputNode({
   const nodeRunResults = useCanvasStore((state) => state.nodeRunResults);
   const runResult = nodeRunResults.get(id);
 
-  // Extract preview text from output object
   const getPreviewText = () => {
     if (!runResult?.output) return "";
     const out = runResult.output as Record<string, unknown>;
@@ -26,8 +25,8 @@ export default function OutputNode({
     else if (typeof out.output === "string") text = out.output;
     else text = JSON.stringify(out);
 
-    if (text.length > 120) {
-      return text.slice(0, 120) + "...";
+    if (text.length > 60) {
+      return text.slice(0, 60) + "...";
     }
     return text;
   };
@@ -36,55 +35,41 @@ export default function OutputNode({
 
   return (
     <div
-      className={`relative min-w-[220px] max-w-[280px] rounded-xl border bg-zinc-900 px-4 py-3 shadow-lg transition-all ${
-        selected ? "border-red-500 ring-1 ring-red-500" : "border-zinc-800"
+      className={`relative w-48 rounded-xl border bg-zinc-900/95 p-2.5 transition-all ${
+        selected
+          ? "border-rose-500 ring-2 ring-rose-500/30 shadow-[0_0_15px_-3px_rgba(244,63,94,0.3)]"
+          : "border-rose-500/40 shadow-[0_0_10px_-3px_rgba(244,63,94,0.1)] hover:border-rose-500/70"
       }`}
     >
-      <div className="absolute inset-x-0 -top-px h-1 rounded-t-xl bg-gradient-to-r from-red-500 to-rose-500" />
-
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 !bg-red-500 border-2 border-zinc-900"
+        className="!w-2.5 !h-2.5 !bg-rose-500 border-2 border-zinc-950 hover:scale-125 transition-transform cursor-crosshair shadow-md"
       />
 
-      <div className="flex items-center space-x-2 pb-1.5 border-b border-zinc-800/80">
-        <div className="rounded-lg bg-red-500/10 p-1.5 text-red-500">
-          <ArrowRightToLine className="h-4 w-4" />
+      <div className="flex items-center space-x-1.5 pb-1.5 border-b border-zinc-800/80">
+        <div className="rounded bg-rose-500/10 p-1 text-rose-400 border border-rose-500/20 shadow-sm">
+          <ArrowRightToLine className="h-3 w-3" />
         </div>
-        <span className="text-sm font-semibold text-zinc-100">{data.label}</span>
+        <span className="text-[11px] font-bold text-zinc-100 tracking-tight truncate">{data.label}</span>
       </div>
 
-      <div className="mt-2 space-y-2 text-xs text-zinc-400">
-        <div className="flex items-center justify-between">
-          <span className="font-medium text-zinc-500">Format:</span>
-          <span className="rounded bg-red-500/10 px-1.5 py-0.5 text-red-400 font-mono text-[10px]">
+      <div className="mt-1.5 space-y-1 text-[10px] text-zinc-400">
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-zinc-400">Format:</span>
+          <span className="rounded bg-rose-500/10 border border-rose-500/20 px-1 py-0.5 text-rose-300 font-mono text-[9px] font-bold">
             {data.config.format || "json"}
           </span>
         </div>
 
-        {/* Live Execution Output Preview Card */}
         {runResult?.status === "SUCCESS" && previewText && (
-          <div className="mt-2 space-y-1 rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-2.5">
-            <div className="flex items-center space-x-1.5 text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
-              <CheckCircle2 className="h-3 w-3 shrink-0" />
+          <div className="pt-1.5 mt-1.5 border-t border-zinc-800/80 space-y-0.5 rounded border border-emerald-500/30 bg-zinc-950/80 p-1.5 shadow-inner">
+            <div className="flex items-center space-x-1 text-[8px] font-bold text-emerald-400 uppercase tracking-widest">
+              <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
               <span>Final Output</span>
             </div>
-            <p className="font-mono text-[11px] leading-relaxed text-zinc-200 line-clamp-3 whitespace-pre-wrap">
+            <p className="font-mono text-[9px] leading-relaxed text-zinc-300 line-clamp-2">
               {previewText}
-            </p>
-          </div>
-        )}
-
-        {/* Live Execution Error Banner */}
-        {runResult?.status === "FAILED" && (
-          <div className="mt-2 space-y-1 rounded-lg border border-red-500/40 bg-red-950/40 p-2.5">
-            <div className="flex items-center space-x-1.5 text-[10px] font-semibold text-red-400 uppercase tracking-wider">
-              <AlertTriangle className="h-3 w-3 shrink-0" />
-              <span>Error</span>
-            </div>
-            <p className="font-mono text-[11px] leading-relaxed text-red-300 line-clamp-2">
-              {runResult.errorMessage || "Node failed during execution"}
             </p>
           </div>
         )}

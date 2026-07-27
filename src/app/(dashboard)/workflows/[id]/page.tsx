@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
@@ -13,6 +13,8 @@ import {
   LogOut,
   AlertCircle,
   CheckCircle2,
+  Pencil,
+  Workflow as WorkflowIcon,
 } from "lucide-react";
 import { useCanvasStore, NodeRunResult } from "@/store/canvasStore";
 import FlowCanvas from "@/components/canvas/FlowCanvas";
@@ -39,9 +41,15 @@ export default function WorkflowEditorPage() {
   const [runError, setRunError] = React.useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Inline Title Editing State
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState("");
+
   const {
     nodes,
     edges,
+    workflowName,
+    updateWorkflowName,
     loadWorkflow,
     saveWorkflow,
     setNodeRunResults,
@@ -62,6 +70,10 @@ export default function WorkflowEditorPage() {
     }
   }, [id, authStatus, loadWorkflow]);
 
+  useEffect(() => {
+    setTitleInput(workflowName);
+  }, [workflowName]);
+
   // Cleanup polling on unmount
   useEffect(() => {
     return () => {
@@ -70,6 +82,13 @@ export default function WorkflowEditorPage() {
       }
     };
   }, []);
+
+  const handleTitleSubmit = () => {
+    setIsEditingTitle(false);
+    if (titleInput.trim() !== workflowName) {
+      updateWorkflowName(id, titleInput);
+    }
+  };
 
   // Pre-Run Graph Validation helper
   const getGraphValidation = (): { valid: boolean; reason?: string } => {
@@ -130,7 +149,6 @@ export default function WorkflowEditorPage() {
 
           const data: RunPollResponse = await res.json();
 
-          // Update node statuses and full node run results in state/store
           const statusMap = new Map<string, string>();
           const resultsMap = new Map<string, NodeRunResult>();
 
@@ -142,7 +160,6 @@ export default function WorkflowEditorPage() {
           setNodeStatuses(statusMap);
           setNodeRunResults(resultsMap);
 
-          // Check if run is finished
           if (
             data.status === "SUCCESS" ||
             data.status === "FAILED" ||
@@ -158,25 +175,24 @@ export default function WorkflowEditorPage() {
               setTimeout(() => setRunState("idle"), 4000);
             } else {
               setRunState("failed");
-              setRunError(data.errorMessage || "Workflow run failed");
+              setRunError(data.errorMessage || "Workflow execution failed");
               setTimeout(() => {
                 setRunState("idle");
                 setRunError(null);
-              }, 6000);
+              }, 5000);
             }
           }
         } catch {
-          // Silently ignore polling errors — retry next tick
+          // Keep polling silently
         }
-      }, 1500);
+      }, 1000);
     },
     [setNodeRunResults]
   );
 
-  const handleRun = async () => {
-    if (!validation.valid || runState === "running") return;
+  const handleRunWorkflow = async () => {
+    if (!validation.valid) return;
 
-    // Save current canvas state before running
     await saveWorkflow(id);
 
     setRunState("running");
@@ -245,122 +261,158 @@ export default function WorkflowEditorPage() {
 
   return (
     <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
-      {/* Universal Header */}
-      <header className="flex h-16 items-center justify-between border-b border-zinc-800 bg-zinc-900/60 px-6 backdrop-blur shrink-0">
+      {/* Canvas Header Bar */}
+      <header className="flex h-16 items-center justify-between border-b border-zinc-800/80 bg-zinc-900/90 px-6 backdrop-blur-md shrink-0 z-10">
         <div className="flex items-center space-x-4">
           <Link
             href="/workflows"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800/80 bg-zinc-950 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-100 transition-all shadow-sm"
             title="Back to Workflows Dashboard"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <div className="flex items-center space-x-2">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-teal-500 to-emerald-400 p-0.5">
-              <div className="flex h-full w-full items-center justify-center rounded-[6px] bg-zinc-950">
-                <span className="text-xs font-black text-teal-400">O</span>
-              </div>
+
+          <div className="h-5 w-px bg-zinc-800/80 hidden sm:block" />
+
+          <div className="flex items-center space-x-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 shadow-sm shadow-teal-500/10">
+              <WorkflowIcon className="h-5 w-5" />
             </div>
+
+            {/* Prominent Workflow Title & Muted ID */}
             <div>
-              <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
-                orchestra.ai
-              </h1>
-              <p className="text-[10px] text-zinc-500">ID: {id}</p>
+              {isEditingTitle ? (
+                <input
+                  type="text"
+                  value={titleInput}
+                  onChange={(e) => setTitleInput(e.target.value)}
+                  onBlur={handleTitleSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleTitleSubmit();
+                  }}
+                  autoFocus
+                  className="rounded-lg border border-teal-500/60 bg-zinc-950 px-2.5 py-0.5 text-base font-bold text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
+                />
+              ) : (
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  className="group flex items-center space-x-2 text-left hover:bg-zinc-800/50 px-2 py-0.5 rounded-lg transition-colors"
+                  title="Click to rename workflow"
+                >
+                  <span className="text-base font-bold text-zinc-100 tracking-tight">
+                    {workflowName}
+                  </span>
+                  <Pencil className="h-3.5 w-3.5 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              )}
+              <p className="text-[10px] text-zinc-500 font-mono tracking-wider px-2">ID: {id}</p>
             </div>
           </div>
         </div>
 
         {/* Action Controls & Navigation */}
         <div className="flex items-center space-x-3">
-          {/* Validation Tooltip Pill */}
+          {/* Pre-Run Validation Tooltip Pill */}
           {!validation.valid && (
             <span
-              className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md max-w-xs truncate"
+              className="text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl max-w-xs truncate"
               title={validation.reason}
             >
               ⚠️ {validation.reason}
             </span>
           )}
 
-          {/* Status Messages */}
+          {/* Execution & Save Status Messages */}
           {saveStatus === "success" && (
-            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
-              <CheckCircle2 className="h-3 w-3" />
-              <span>Saved!</span>
+            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Saved</span>
             </span>
           )}
           {saveStatus === "error" && (
-            <span className="text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-2.5 py-1 rounded-md">
+            <span className="text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl">
               Save failed
             </span>
           )}
           {runState === "success" && (
-            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
-              <CheckCircle2 className="h-3 w-3" />
-              <span>Run complete!</span>
+            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Run complete</span>
             </span>
           )}
           {runState === "failed" && (
-            <span
-              className="text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-2.5 py-1 rounded-md"
-              title={runError || undefined}
-            >
-              Run failed
+            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl">
+              <AlertCircle className="h-3.5 w-3.5" />
+              <span>{runError || "Run failed"}</span>
             </span>
           )}
 
-          {/* Save Button */}
-          <button
-            onClick={handleSave}
-            disabled={isSaving || runState === "running"}
-            className="inline-flex items-center space-x-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 px-3.5 py-2 text-xs font-medium text-zinc-200 transition-colors disabled:opacity-50 disabled:pointer-events-none"
-          >
-            <Save className="h-3.5 w-3.5" />
-            <span>{isSaving ? "Saving..." : "Save"}</span>
-          </button>
+          {/* Grouped Primary Action Cluster (Save & Run) */}
+          <div className="flex items-center space-x-2 bg-zinc-950/60 p-1 rounded-2xl border border-zinc-800/80">
+            {/* Save Button */}
+            <button
+              onClick={handleSave}
+              disabled={isSaving || runState === "running"}
+              className="inline-flex items-center space-x-1.5 rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-1.5 text-xs font-semibold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition-all disabled:opacity-50"
+            >
+              {isSaving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5 text-zinc-400" />
+              )}
+              <span>Save</span>
+            </button>
 
-          {/* Run Button */}
-          <button
-            onClick={handleRun}
-            disabled={!validation.valid || runState === "running"}
-            title={!validation.valid ? validation.reason : "Execute DAG workflow"}
-            className="inline-flex items-center space-x-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-semibold text-white transition-colors disabled:opacity-40 disabled:pointer-events-none shadow-md"
-          >
-            {runState === "running" ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Play className="h-3.5 w-3.5 fill-white" />
-            )}
-            <span>{runState === "running" ? "Running..." : "Run Workflow"}</span>
-          </button>
+            {/* Run Button (Primary Standout CTA) */}
+            <button
+              onClick={handleRunWorkflow}
+              disabled={!validation.valid || isSaving || runState === "running"}
+              className="inline-flex items-center space-x-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 px-4 py-1.5 text-xs font-bold text-zinc-950 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed shadow-lg shadow-teal-500/20 border border-teal-400/30"
+            >
+              {runState === "running" ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Running...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  <span>Run Workflow</span>
+                </>
+              )}
+            </button>
+          </div>
 
-          <div className="h-4 w-px bg-zinc-800 mx-1" />
+          <div className="h-5 w-px bg-zinc-800/80 mx-1" />
 
-          {/* Global Nav Links & Sign Out */}
+          {/* Quick Settings Link */}
           <Link
             href="/settings/api-keys"
-            className="inline-flex items-center space-x-1.5 rounded-lg border border-zinc-800 bg-zinc-950 hover:bg-zinc-800 text-zinc-300 px-3 py-2 text-xs font-semibold transition-colors"
-            title="API Key Settings"
+            className="inline-flex items-center space-x-1.5 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+            title="API Keys Settings"
           >
             <Key className="h-3.5 w-3.5 text-teal-400" />
             <span className="hidden sm:inline">API Keys</span>
           </Link>
 
+          {/* Sign Out */}
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="inline-flex items-center space-x-1.5 rounded-lg border border-zinc-800 bg-zinc-950 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 px-3 py-2 text-xs font-semibold transition-colors"
-            title={`Logged in as ${session?.user?.email}`}
+            className="inline-flex items-center space-x-1.5 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+            title="Sign Out"
           >
             <LogOut className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Sign Out</span>
+            <span className="hidden sm:inline">Sign Out</span>
           </button>
         </div>
       </header>
 
-      {/* Editor Main Content Area */}
-      <div className="flex flex-1 overflow-hidden h-full">
+      {/* Main Canvas Workspace */}
+      <div className="flex flex-1 overflow-hidden relative">
         <LeftSidebar />
-        <FlowCanvas nodeStatuses={nodeStatuses} />
+        <div className="flex-1 relative">
+          <FlowCanvas nodeStatuses={nodeStatuses} />
+        </div>
         <RightSidebar />
       </div>
     </div>
