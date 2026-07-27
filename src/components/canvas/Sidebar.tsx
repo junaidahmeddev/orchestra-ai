@@ -31,15 +31,15 @@ export function LeftSidebar() {
       description: "Start workflow manually, via webhook, or on a schedule.",
       icon: Play,
       colorClass: "text-amber-400 bg-amber-500/10 border-amber-500/30",
-      hoverBorder: "group-hover:border-amber-500/50 hover:shadow-amber-500/5",
+      hoverBorder: "hover:border-amber-500/60 hover:shadow-[0_0_15px_-3px_rgba(245,158,11,0.25)]",
     },
     {
       type: "AI_ENGINE",
       label: "AI Engine Node",
       description: "Execute a prompt with OpenAI, Anthropic, or Gemini.",
       icon: Sparkles,
-      colorClass: "text-violet-400 bg-violet-500/10 border-violet-500/30",
-      hoverBorder: "group-hover:border-violet-500/50 hover:shadow-violet-500/5",
+      colorClass: "text-indigo-400 bg-indigo-500/10 border-indigo-500/30",
+      hoverBorder: "hover:border-indigo-500/60 hover:shadow-[0_0_15px_-3px_rgba(99,102,241,0.25)]",
     },
     {
       type: "DATA_PROCESSOR",
@@ -47,33 +47,33 @@ export function LeftSidebar() {
       description: "Run custom JavaScript or Python code snippets.",
       icon: Code2,
       colorClass: "text-blue-400 bg-blue-500/10 border-blue-500/30",
-      hoverBorder: "group-hover:border-blue-500/50 hover:shadow-blue-500/5",
+      hoverBorder: "hover:border-blue-500/60 hover:shadow-[0_0_15px_-3px_rgba(59,130,246,0.25)]",
     },
     {
       type: "INTEGRATION",
       label: "Integration Node",
       description: "Trigger external webhooks or REST API calls.",
       icon: Link2,
-      colorClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
-      hoverBorder: "group-hover:border-emerald-500/50 hover:shadow-emerald-500/5",
+      colorClass: "text-teal-400 bg-teal-500/10 border-teal-500/30",
+      hoverBorder: "hover:border-teal-500/60 hover:shadow-[0_0_15px_-3px_rgba(20,184,166,0.25)]",
     },
     {
       type: "OUTPUT",
       label: "Output Node",
       description: "Render the final result in custom formatting.",
       icon: ArrowRightToLine,
-      colorClass: "text-red-400 bg-red-500/10 border-red-500/30",
-      hoverBorder: "group-hover:border-red-500/50 hover:shadow-red-500/5",
+      colorClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+      hoverBorder: "hover:border-emerald-500/60 hover:shadow-[0_0_15px_-3px_rgba(16,185,129,0.25)]",
     },
   ];
 
   return (
-    <aside className="w-64 border-r border-zinc-800/80 bg-zinc-900/50 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-md custom-scrollbar">
+    <aside className="w-64 border-r border-slate-800/80 bg-[#0F172A]/40 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-xl custom-scrollbar">
       <div className="mb-6">
-        <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+        <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
           Node Palette
         </h3>
-        <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
           Drag nodes onto the canvas to construct your AI workflow.
         </p>
       </div>
@@ -84,7 +84,7 @@ export function LeftSidebar() {
           return (
             <div
               key={item.type}
-              className={`group cursor-grab border border-zinc-800/80 bg-gradient-to-b from-zinc-900/90 to-zinc-950 p-3 rounded-xl hover:bg-zinc-900 active:cursor-grabbing transition-all hover:shadow-lg hover:-translate-y-0.5 relative ${item.hoverBorder}`}
+              className={`group cursor-grab border border-slate-800/90 bg-slate-900/60 p-3 rounded-xl hover:bg-slate-800/80 active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] relative ${item.hoverBorder}`}
               onDragStart={(event) => onDragStart(event, item.type)}
               draggable
             >
@@ -93,16 +93,16 @@ export function LeftSidebar() {
                   <div className={`p-1.5 rounded-lg border shadow-sm ${item.colorClass}`}>
                     <Icon className="h-3.5 w-3.5" />
                   </div>
-                  <span className="text-xs font-bold text-zinc-200 group-hover:text-zinc-100 transition-colors">
+                  <span className="text-xs font-bold text-slate-200 group-hover:text-slate-100 transition-colors">
                     {item.label}
                   </span>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-all flex items-center space-x-1 text-[10px] font-semibold text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800/80 shadow-sm">
+                <div className="opacity-0 group-hover:opacity-100 transition-all flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 shadow-sm">
                   <GripVertical className="h-3 w-3" />
                   <span>+ Drag</span>
                 </div>
               </div>
-              <p className="text-[11px] text-zinc-500 mt-2 leading-relaxed">
+              <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
                 {item.description}
               </p>
             </div>
@@ -132,9 +132,9 @@ export function RightSidebar() {
 
   if (!selectedNode) {
     return (
-      <aside className="w-64 border-l border-zinc-800/80 bg-zinc-900/50 p-4 flex flex-col h-full items-center justify-center text-zinc-500 text-center shrink-0 z-10 backdrop-blur-md">
-        <div className="rounded-2xl border border-dashed border-zinc-800 p-6 max-w-xs bg-zinc-950/40">
-          <p className="text-xs leading-relaxed">
+      <aside className="w-64 border-l border-slate-800/80 bg-[#0F172A]/40 p-4 flex flex-col h-full items-center justify-center text-slate-500 text-center shrink-0 z-10 backdrop-blur-xl">
+        <div className="rounded-2xl border border-dashed border-slate-800 p-6 max-w-xs bg-slate-950/60 shadow-xl">
+          <p className="text-xs leading-relaxed text-slate-400">
             Select a node on the canvas to configure its settings or inspect live output results.
           </p>
         </div>
@@ -168,7 +168,7 @@ export function RightSidebar() {
   const formattedOutputText = getFormattedOutput();
 
   return (
-    <aside className="w-64 border-l border-zinc-800/80 bg-zinc-900/50 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-md custom-scrollbar">
+    <aside className="w-64 border-l border-slate-800/80 bg-[#0F172A]/40 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-xl custom-scrollbar">
       {/* Sidebar Header */}
       <div className="pb-4 border-b border-zinc-800/80 flex justify-between items-center mb-5">
         <div>

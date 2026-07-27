@@ -260,22 +260,22 @@ export default function WorkflowEditorPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#090D16] text-slate-100 overflow-hidden">
       {/* Canvas Header Bar */}
-      <header className="flex h-16 items-center justify-between border-b border-zinc-800/80 bg-zinc-900/90 px-6 backdrop-blur-md shrink-0 z-10">
+      <header className="flex h-16 items-center justify-between border-b border-slate-800/80 bg-[#0F172A]/60 px-6 backdrop-blur-xl shrink-0 z-10 shadow-xl">
         <div className="flex items-center space-x-4">
           <Link
             href="/workflows"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800/80 bg-zinc-950 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-100 transition-all shadow-sm"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-100 transition-all shadow-sm"
             title="Back to Workflows Dashboard"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
 
-          <div className="h-5 w-px bg-zinc-800/80 hidden sm:block" />
+          <div className="h-5 w-px bg-slate-800 hidden sm:block" />
 
           <div className="flex items-center space-x-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 shadow-sm shadow-teal-500/10">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-sm shadow-cyan-500/10">
               <WorkflowIcon className="h-5 w-5" />
             </div>
 
@@ -291,21 +291,21 @@ export default function WorkflowEditorPage() {
                     if (e.key === "Enter") handleTitleSubmit();
                   }}
                   autoFocus
-                  className="rounded-lg border border-teal-500/60 bg-zinc-950 px-2.5 py-0.5 text-base font-bold text-zinc-100 focus:outline-none focus:ring-2 focus:ring-teal-500/30"
+                  className="rounded-lg border border-cyan-500/60 bg-slate-950 px-2.5 py-0.5 text-base font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                 />
               ) : (
                 <button
                   onClick={() => setIsEditingTitle(true)}
-                  className="group flex items-center space-x-2 text-left hover:bg-zinc-800/50 px-2 py-0.5 rounded-lg transition-colors"
+                  className="group flex items-center space-x-2 text-left hover:bg-slate-800/50 px-2 py-0.5 rounded-lg transition-colors"
                   title="Click to rename workflow"
                 >
-                  <span className="text-base font-bold text-zinc-100 tracking-tight">
+                  <span className="text-base font-bold text-slate-100 tracking-tight">
                     {workflowName}
                   </span>
-                  <Pencil className="h-3.5 w-3.5 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Pencil className="h-3.5 w-3.5 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               )}
-              <p className="text-[10px] text-zinc-500 font-mono tracking-wider px-2">ID: {id}</p>
+              <p className="text-[10px] text-slate-500 font-mono tracking-wider px-2">ID: {id}</p>
             </div>
           </div>
         </div>
@@ -348,26 +348,26 @@ export default function WorkflowEditorPage() {
           )}
 
           {/* Grouped Primary Action Cluster (Save & Run) */}
-          <div className="flex items-center space-x-2 bg-zinc-950/60 p-1 rounded-2xl border border-zinc-800/80">
+          <div className="flex items-center space-x-2 bg-slate-950/80 p-1 rounded-2xl border border-slate-800/80">
             {/* Save Button */}
             <button
               onClick={handleSave}
               disabled={isSaving || runState === "running"}
-              className="inline-flex items-center space-x-1.5 rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-1.5 text-xs font-semibold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition-all disabled:opacity-50"
+              className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:bg-slate-800 transition-all disabled:opacity-50"
             >
               {isSaving ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Save className="h-3.5 w-3.5 text-zinc-400" />
+                <Save className="h-3.5 w-3.5 text-slate-400" />
               )}
               <span>Save</span>
             </button>
 
-            {/* Run Button (Primary Standout CTA) */}
+            {/* Run Button (Vibrant Neon Glow CTA) */}
             <button
               onClick={handleRunWorkflow}
               disabled={!validation.valid || isSaving || runState === "running"}
-              className="inline-flex items-center space-x-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 px-4 py-1.5 text-xs font-bold text-zinc-950 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed shadow-lg shadow-teal-500/20 border border-teal-400/30"
+              className="inline-flex items-center space-x-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 px-4 py-1.5 text-xs font-extrabold text-slate-950 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed shadow-[0_0_20px_-3px_rgba(20,184,166,0.5)] border border-cyan-400/40"
             >
               {runState === "running" ? (
                 <>
@@ -383,15 +383,15 @@ export default function WorkflowEditorPage() {
             </button>
           </div>
 
-          <div className="h-5 w-px bg-zinc-800/80 mx-1" />
+          <div className="h-5 w-px bg-slate-800 mx-1" />
 
           {/* Quick Settings Link */}
           <Link
             href="/settings/api-keys"
-            className="inline-flex items-center space-x-1.5 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+            className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:border-slate-700 transition-all"
             title="API Keys Settings"
           >
-            <Key className="h-3.5 w-3.5 text-teal-400" />
+            <Key className="h-3.5 w-3.5 text-cyan-400" />
             <span className="hidden sm:inline">API Keys</span>
           </Link>
 
