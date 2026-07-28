@@ -371,10 +371,30 @@ export function RightSidebar() {
                 </label>
                 <input
                   type="text"
+                  placeholder="https://discord.com/api/webhooks/..."
                   className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-mono text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
                   value={config.endpoint || ""}
                   onChange={(e) => handleConfigChange("endpoint", e.target.value)}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                    Body Template (JSON)
+                  </label>
+                  <span className="text-[10px] text-teal-400 font-mono">Variables allowed</span>
+                </div>
+                <textarea
+                  rows={5}
+                  placeholder='{"content": "{{previous_output}}"}'
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 p-3.5 text-xs font-mono text-cyan-300 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all resize-none leading-relaxed"
+                  value={config.body || ""}
+                  onChange={(e) => handleConfigChange("body", e.target.value)}
+                />
+                <p className="text-[10px] text-zinc-500 leading-normal">
+                  Use <code className="text-teal-400 font-mono">{"{{previous_output}}"}</code> or <code className="text-teal-400 font-mono">{"{{result}}"}</code> to insert data from upstream AI/Processor nodes.
+                </p>
               </div>
             </div>
           )}
