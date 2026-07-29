@@ -37,6 +37,7 @@ export interface NodeConfig {
   service?: string;
   endpoint?: string;
   method?: "GET" | "POST" | "PUT" | "DELETE";
+  body?: string;
 
   // Output
   format?: string;
