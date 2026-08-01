@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "Open-source visual node-based AI workflow automation tool",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
