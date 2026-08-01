@@ -1,0 +1,42 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  ci:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Typecheck
+        run: npx tsc --noEmit
+
+      - name: Run Unit & Integration Tests (Vitest)
+        run: npm test
+
+      - name: Test Production Build
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://ci_user:ci_pass@localhost:5432/ci_db?sslmode=require"
+          NEXTAUTH_SECRET: "ci-testing-nextauth-secret-key-32chars"
+          NEXTAUTH_URL: "http://localhost:3000"
+          ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
