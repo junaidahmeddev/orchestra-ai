@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "./route";
 import { db } from "@/lib/db";
 import { authOptions } from "@/lib/auth";
-import { hash, compare } from "bcrypt";
+import { hash, compare } from "bcryptjs";
 
 // Mock Prisma client singleton
 vi.mock("@/lib/db", () => ({
