@@ -39,6 +39,12 @@ next-env.d.ts
 # vercel
 .vercel
 
+# test results & coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/coverage/
+
 # prisma (keep schema + migrations, ignore local dev db files if any)
 prisma/*.db
 prisma/*.db-journal
