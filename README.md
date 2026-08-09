@@ -57,7 +57,7 @@ Follow these steps to set up **orchestra.ai** locally on your machine.
 ```bash
 git clone https://github.com/junaidahmeddev/orchestra-ai.git
 cd orchestra-ai
-npm install --legacy-peer-deps
+npm install
 ```
 
 ### 2. Environment Variables Setup

@@ -9,7 +9,7 @@ function getEncryptionKey(): Buffer {
 
   if (!hexKey) {
     throw new Error(
-      "ENCRYPTION_KEY environment variable is not defined in environment variables."
+      "ENCRYPTION_KEY is not defined in environment variables."
     );
   }
 
