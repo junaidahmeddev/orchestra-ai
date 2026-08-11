@@ -428,7 +428,7 @@ export default function ApiKeysSettingsPage() {
             <p className="text-xs text-zinc-300 leading-relaxed bg-zinc-950 p-3 rounded-lg border border-zinc-800">
               Are you sure you want to delete{" "}
               <span className="font-semibold text-teal-400">
-                "{keyToDelete.label}"
+                &quot;{keyToDelete.label}&quot;
               </span>
               ? Workflows relying on this {keyToDelete.provider} key will fail until a new key is added.
             </p>

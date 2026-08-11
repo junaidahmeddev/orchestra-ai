@@ -419,7 +419,7 @@ export default function WorkflowsListPage() {
             <p className="text-xs text-zinc-300 leading-relaxed bg-zinc-950 p-3.5 rounded-xl border border-zinc-800">
               Are you sure you want to permanently delete{" "}
               <span className="font-semibold text-teal-400">
-                "{workflowToDelete.name}"
+                &quot;{workflowToDelete.name}&quot;
               </span>
               ? All saved nodes, edges, and execution history will be removed.
             </p>

@@ -92,8 +92,11 @@ describe("POST /api/auth/register (Integration Tests)", () => {
 });
 
 describe("NextAuth Credentials Authorize (Login Flow Integration Tests)", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const credentialProvider = authOptions.providers[0] as any;
+  // eslint-disable-next-line
+  const credentialProvider = authOptions.providers[0] as unknown as {
+    options?: { authorize: (c: Record<string, string>) => Promise<unknown> };
+    authorize: (c: Record<string, string>) => Promise<unknown>;
+  };
   const authorizeFn = credentialProvider.options?.authorize || credentialProvider.authorize;
 
   beforeEach(() => {

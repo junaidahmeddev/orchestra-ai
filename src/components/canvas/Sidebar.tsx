@@ -429,7 +429,7 @@ export function RightSidebar() {
               <div className="space-y-1">
                 <p className="text-xs font-semibold text-zinc-300">No execution data yet</p>
                 <p className="text-[11px] text-zinc-500 leading-relaxed">
-                  Click <span className="text-teal-400 font-semibold">"Run Workflow"</span> in the header to execute this node and view live outputs.
+                  Click <span className="text-teal-400 font-semibold">&quot;Run Workflow&quot;</span> in the header to execute this node and view live outputs.
                 </p>
               </div>
             </div>
