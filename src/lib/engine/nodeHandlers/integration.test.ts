@@ -27,6 +27,15 @@ describe("Integration Node Variable Substitution (substituteVariables)", () => {
     const parsed = JSON.parse(output);
     expect(parsed.content).toBe('Line 1\nLine 2 with "quotes"');
   });
+
+  it("should safely escape nested object values when substituted inside JSON string templates", () => {
+    const template = '{"payload": "{{meta}}"}';
+    const data = { meta: { status: "active", count: 42 } };
+
+    const output = substituteVariables(template, data);
+    const parsed = JSON.parse(output);
+    expect(JSON.parse(parsed.payload)).toEqual({ status: "active", count: 42 });
+  });
 });
 
 describe("Integration Node Handler (handleIntegration)", () => {
