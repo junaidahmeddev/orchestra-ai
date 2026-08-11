@@ -132,7 +132,7 @@ function LoginForm() {
       </form>
 
       <div className="text-center text-sm text-zinc-400 pt-2 border-t border-zinc-800/80">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <Link
           href="/register"
           className="font-medium text-teal-400 hover:text-teal-300 underline underline-offset-4 transition-colors"

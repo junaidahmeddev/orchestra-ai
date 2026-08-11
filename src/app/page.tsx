@@ -228,7 +228,7 @@ export default function HomePage() {
                         <span className="font-mono text-purple-300">gemini-3.6-flash</span>
                       </div>
                       <div className="rounded bg-zinc-950 p-2 font-mono text-[10px] text-zinc-300 line-clamp-2 border border-zinc-800">
-                        "Analyze ticket & generate summary"
+                        &quot;Analyze ticket &amp; generate summary&quot;
                       </div>
                     </div>
                   </div>
