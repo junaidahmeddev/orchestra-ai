@@ -71,7 +71,7 @@ export function substituteVariables(
     const strVal = typeof val === "object" ? JSON.stringify(val) : String(val);
 
     // If template is JSON, escape string values for safe inclusion inside JSON quotes
-    if (isJsonContext && typeof val === "string") {
+    if (isJsonContext) {
       return JSON.stringify(strVal).slice(1, -1);
     }
 
