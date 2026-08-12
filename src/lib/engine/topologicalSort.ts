@@ -56,8 +56,12 @@ export function topologicalSort(
     inDegree.set(node.id, 0);
   }
 
-  // Populate from edges
+  // Populate from edges (ignoring dangling edges referencing non-existent nodes)
   for (const edge of edges) {
+    if (!inDegree.has(edge.source) || !inDegree.has(edge.target)) {
+      continue;
+    }
+
     const neighbors = adjacencyList.get(edge.source);
     if (neighbors) {
       neighbors.push(edge.target);
