@@ -69,4 +69,20 @@ describe("topologicalSort (Unit Tests)", () => {
       /Cycle detected involving node\(s\):/
     );
   });
+
+  it("should safely ignore dangling edges referencing deleted or non-existent node IDs", () => {
+    const nodes: EngineNode[] = [
+      { id: "node-1", type: "TRIGGER", label: "Trigger", config: {} },
+      { id: "node-2", type: "OUTPUT", label: "Output", config: {} },
+    ];
+
+    const edges: EngineEdge[] = [
+      { id: "e-dangling-1", source: "deleted-node", target: "node-2" },
+      { id: "e-dangling-2", source: "node-1", target: "non-existent-target" },
+      { id: "e-valid", source: "node-1", target: "node-2" },
+    ];
+
+    const sorted = topologicalSort(nodes, edges);
+    expect(sorted.map((n) => n.id)).toEqual(["node-1", "node-2"]);
+  });
 });
