@@ -107,10 +107,7 @@ describe("NextAuth Credentials Authorize (Login Flow Integration Tests)", () => 
     vi.mocked(db.user.findUnique).mockResolvedValueOnce(null);
 
     await expect(
-      authorizeFn(
-        { email: "unknown@orchestra.ai", password: "password123" },
-        {}
-      )
+      authorizeFn({ email: "unknown@orchestra.ai", password: "password123" })
     ).rejects.toThrow("Invalid credentials");
   });
 
@@ -127,10 +124,7 @@ describe("NextAuth Credentials Authorize (Login Flow Integration Tests)", () => 
     });
 
     await expect(
-      authorizeFn(
-        { email: "test@orchestra.ai", password: "wrongpassword" },
-        {}
-      )
+      authorizeFn({ email: "test@orchestra.ai", password: "wrongpassword" })
     ).rejects.toThrow("Invalid credentials");
   });
 
@@ -155,10 +149,10 @@ describe("NextAuth Credentials Authorize (Login Flow Integration Tests)", () => 
       updatedAt: new Date(),
     });
 
-    const user = await authorizeFn(
-      { email: "test@orchestra.ai", password: "correctpassword" },
-      {}
-    );
+    const user = await authorizeFn({
+      email: "test@orchestra.ai",
+      password: "correctpassword",
+    });
 
     expect(user).toEqual({
       id: "user-1",

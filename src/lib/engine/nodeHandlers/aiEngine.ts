@@ -10,14 +10,16 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/db";
 import { decrypt } from "@/lib/encryption";
 import { NodeHandlerInput, NodeHandlerOutput } from "../types";
+import { substituteVariables } from "./integration";
 
 export async function handleAIEngine(
   input: NodeHandlerInput
 ): Promise<NodeHandlerOutput> {
   const provider = input.config.provider || "GEMINI";
   const modelName = input.config.model || "gemini-3.6-flash";
-  const systemPrompt = input.config.systemPrompt || "";
-  const temperature = input.config.temperature ?? 0.7;
+  const rawSystemPrompt = (input.config.systemPrompt || "") as string;
+  const rawUserPrompt = ((input.config.userPrompt || input.config.prompt || "") as string);
+  const temperature = (input.config.temperature as number) ?? 0.7;
 
   // Validate user session context
   if (!input.userId) {
@@ -25,6 +27,14 @@ export async function handleAIEngine(
       "Execution context missing user ID. Cannot retrieve stored API keys."
     );
   }
+
+  // Substitute template variables (e.g. {{previous_output}}, {{key}})
+  const systemPrompt = rawSystemPrompt
+    ? substituteVariables(rawSystemPrompt, input.data)
+    : "";
+  const configuredUserPrompt = rawUserPrompt
+    ? substituteVariables(rawUserPrompt, input.data)
+    : "";
 
   // Phase 7 currently implements Google Gemini
   if (provider === "GEMINI" || provider === "OPENAI" || provider === "ANTHROPIC") {
@@ -61,7 +71,9 @@ export async function handleAIEngine(
 
     // Extract prompt from upstream input data if present
     let promptText = "";
-    if (typeof input.data?.result === "string" && input.data.result.trim()) {
+    if (configuredUserPrompt.trim()) {
+      promptText = configuredUserPrompt;
+    } else if (typeof input.data?.result === "string" && input.data.result.trim()) {
       promptText = input.data.result;
     } else if (
       typeof input.data?.output === "string" &&

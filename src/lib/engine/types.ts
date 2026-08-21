@@ -27,6 +27,8 @@ export interface NodeConfig {
   provider?: "OPENAI" | "ANTHROPIC" | "GEMINI";
   model?: string;
   systemPrompt?: string;
+  userPrompt?: string;
+  prompt?: string;
   temperature?: number;
 
   // Data Processor
