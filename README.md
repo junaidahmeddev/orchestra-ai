@@ -10,6 +10,10 @@
 [![Tests](https://img.shields.io/badge/Tests-Passed-brightgreen?logo=vitest)](#-testing-suite-phase-8-summary)
 [![CI/CD](https://img.shields.io/badge/CI-GitHub%20Actions-blue?logo=githubactions)](#-ci-workflow)
 
+<br />
+
+<img src="public/screenshot.png" alt="orchestra.ai Visual Node Engine Canvas Screenshot" width="100%" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);" />
+
 ---
 
 </div>
