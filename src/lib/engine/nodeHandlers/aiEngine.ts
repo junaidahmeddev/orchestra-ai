@@ -75,11 +75,15 @@ export async function handleAIEngine(
       promptText = configuredUserPrompt;
     } else if (typeof input.data?.result === "string" && input.data.result.trim()) {
       promptText = input.data.result;
+    } else if (typeof input.data?.result === "object" && input.data.result !== null) {
+      promptText = JSON.stringify(input.data.result, null, 2);
     } else if (
       typeof input.data?.output === "string" &&
       input.data.output.trim()
     ) {
       promptText = input.data.output;
+    } else if (typeof input.data?.output === "object" && input.data.output !== null) {
+      promptText = JSON.stringify(input.data.output, null, 2);
     } else if (
       typeof input.data?.text === "string" &&
       input.data.text.trim()
@@ -98,7 +102,7 @@ export async function handleAIEngine(
     const finalPrompt = promptText.trim()
       ? promptText.trim()
       : systemPrompt.trim()
-      ? systemPrompt.trim()
+      ? "Execute instructions according to system prompt."
       : "Hello! Summarize the status of this AI Engine node workflow step.";
 
     try {

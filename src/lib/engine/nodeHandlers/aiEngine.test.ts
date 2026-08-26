@@ -91,4 +91,35 @@ describe("handleAIEngine", () => {
     expect(result.output.provider).toBe("GEMINI");
     expect(result.output.systemPrompt).toBe("You are an assistant for Alice");
   });
+
+  it("should extract object-based upstream result data cleanly as prompt payload", async () => {
+    const { ciphertext, iv } = encrypt("test-gemini-key");
+
+    vi.mocked(db.apiKey.findFirst).mockResolvedValue({
+      id: "key-1",
+      userId: "user-123",
+      provider: "GEMINI",
+      encryptedKey: ciphertext,
+      iv: iv,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
+
+    const result = await handleAIEngine({
+      nodeId: "node-2",
+      config: {
+        provider: "GEMINI",
+        model: "gemini-3.6-flash",
+      },
+      data: {
+        result: { summary: "Transformed Data", itemsCount: 10 },
+      },
+      userId: "user-123",
+    });
+
+    expect(result.output.result).toBe("AI Generated Response Content");
+    expect(result.output.upstreamData).toEqual({
+      result: { summary: "Transformed Data", itemsCount: 10 },
+    });
+  });
 });
