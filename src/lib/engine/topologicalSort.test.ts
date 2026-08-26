@@ -85,4 +85,19 @@ describe("topologicalSort (Unit Tests)", () => {
     const sorted = topologicalSort(nodes, edges);
     expect(sorted.map((n) => n.id)).toEqual(["node-1", "node-2"]);
   });
+
+  it("should handle duplicate edges between the same source and target without corrupting in-degree counts", () => {
+    const nodes: EngineNode[] = [
+      { id: "node-1", type: "TRIGGER", label: "Trigger", config: {} },
+      { id: "node-2", type: "OUTPUT", label: "Output", config: {} },
+    ];
+
+    const duplicateEdges: EngineEdge[] = [
+      { id: "e1", source: "node-1", target: "node-2" },
+      { id: "e2", source: "node-1", target: "node-2" }, // Duplicate connection
+    ];
+
+    const sorted = topologicalSort(nodes, duplicateEdges);
+    expect(sorted.map((n) => n.id)).toEqual(["node-1", "node-2"]);
+  });
 });

@@ -56,11 +56,20 @@ export function topologicalSort(
     inDegree.set(node.id, 0);
   }
 
-  // Populate from edges (ignoring dangling edges referencing non-existent nodes)
+  // Track seen source->target edge pairs to prevent duplicate edges from corrupting in-degree counts
+  const seenEdges = new Set<string>();
+
+  // Populate from edges (ignoring dangling edges referencing non-existent nodes and duplicate connections)
   for (const edge of edges) {
     if (!inDegree.has(edge.source) || !inDegree.has(edge.target)) {
       continue;
     }
+
+    const edgeKey = `${edge.source}->${edge.target}`;
+    if (seenEdges.has(edgeKey)) {
+      continue;
+    }
+    seenEdges.add(edgeKey);
 
     const neighbors = adjacencyList.get(edge.source);
     if (neighbors) {
