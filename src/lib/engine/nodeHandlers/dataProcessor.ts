@@ -77,6 +77,9 @@ export async function handleDataProcessor(
         const __result = (function() {
           ${userCode}
         })();
+        if (__result === undefined) {
+          return JSON.stringify(null);
+        }
         return JSON.stringify(__result);
       })()
     `;
@@ -91,7 +94,7 @@ export async function handleDataProcessor(
     });
 
     // Parse the result back on our (trusted) side
-    const result = JSON.parse(resultJSON as string);
+    const result = resultJSON !== undefined && resultJSON !== null ? JSON.parse(resultJSON as string) : null;
 
     return {
       output: {

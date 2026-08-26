@@ -50,4 +50,18 @@ describe("handleDataProcessor (isolated-vm Sandbox Unit Tests)", () => {
       })
     ).rejects.toThrow(/require is not defined|ReferenceError/i);
   });
+
+  it("should handle scripts returning undefined gracefully without crashing", async () => {
+    const result = await handleDataProcessor({
+      nodeId: "node-dp-undefined",
+      config: {
+        language: "javascript",
+        code: "const x = 42; // no return statement",
+      },
+      data: {},
+    });
+
+    expect(result.output.executedSuccessfully).toBe(true);
+    expect(result.output.result).toBeNull();
+  });
 });
