@@ -46,7 +46,18 @@ describe("encryption (AES-256 Unit Tests)", () => {
     // Switch to a different key
     process.env.ENCRYPTION_KEY = crypto.randomBytes(32).toString("hex");
 
-    expect(() => decrypt(encrypted.ciphertext, encrypted.iv)).toThrow();
+    expect(() => decrypt(encrypted.ciphertext, encrypted.iv)).toThrow(
+      "Failed to decrypt payload: invalid ciphertext, corrupted data, or key mismatch."
+    );
+  });
+
+  it("should throw clean domain error when decrypting corrupted or invalid ciphertext", () => {
+    const validIv = crypto.randomBytes(16).toString("hex");
+    const corruptedCiphertext = "badhex1234567890abcdef";
+
+    expect(() => decrypt(corruptedCiphertext, validIv)).toThrow(
+      "Failed to decrypt payload: invalid ciphertext, corrupted data, or key mismatch."
+    );
   });
 
   it("should correctly mask sensitive API keys for display", () => {

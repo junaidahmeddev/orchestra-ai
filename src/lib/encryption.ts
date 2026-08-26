@@ -61,12 +61,21 @@ export function decrypt(ciphertext: string, ivHex: string): string {
     throw new Error("Invalid IV length for AES-256-CBC decryption");
   }
 
-  const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+  try {
+    const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
 
-  let decrypted = decipher.update(ciphertext, "hex", "utf8");
-  decrypted += decipher.final("utf8");
+    let decrypted = decipher.update(ciphertext, "hex", "utf8");
+    decrypted += decipher.final("utf8");
 
-  return decrypted;
+    return decrypted;
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message.includes("ENCRYPTION_KEY")) {
+      throw err;
+    }
+    throw new Error(
+      "Failed to decrypt payload: invalid ciphertext, corrupted data, or key mismatch."
+    );
+  }
 }
 
 /**
