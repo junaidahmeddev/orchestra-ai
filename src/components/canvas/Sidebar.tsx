@@ -18,13 +18,34 @@ import {
   GripVertical,
 } from "lucide-react";
 
-export function LeftSidebar() {
+interface SidebarProps {
+  className?: string;
+  onNodeAdded?: () => void;
+}
+
+export function LeftSidebar({ className = "", onNodeAdded }: SidebarProps) {
+  const { addNode, nodes } = useCanvasStore();
+
   const onDragStart = (event: React.DragEvent, nodeType: string) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
   };
 
-  const paletteItems = [
+  const handleAddNodeClick = (type: CustomNode["data"]["type"]) => {
+    const xPos = 150 + (nodes.length % 4) * 40;
+    const yPos = 150 + (nodes.length % 4) * 40;
+    addNode(type, { x: xPos, y: yPos });
+    if (onNodeAdded) onNodeAdded();
+  };
+
+  const paletteItems: {
+    type: CustomNode["data"]["type"];
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    colorClass: string;
+    hoverBorder: string;
+  }[] = [
     {
       type: "TRIGGER",
       label: "Trigger Node",
@@ -68,13 +89,13 @@ export function LeftSidebar() {
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-800/80 bg-[#0F172A]/40 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-xl custom-scrollbar">
+    <aside className={`w-full md:w-64 border-r border-slate-800/80 bg-[#0F172A]/90 md:bg-[#0F172A]/40 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-xl custom-scrollbar ${className}`}>
       <div className="mb-6">
         <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
           Node Palette
         </h3>
         <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-          Drag nodes onto the canvas to construct your AI workflow.
+          Drag onto canvas or tap to add a node to your AI workflow.
         </p>
       </div>
 
@@ -86,6 +107,7 @@ export function LeftSidebar() {
               key={item.type}
               className={`group cursor-grab border border-slate-800/90 bg-slate-900/60 p-3 rounded-xl hover:bg-slate-800/80 active:cursor-grabbing transition-all duration-200 hover:scale-[1.02] relative ${item.hoverBorder}`}
               onDragStart={(event) => onDragStart(event, item.type)}
+              onClick={() => handleAddNodeClick(item.type)}
               draggable
             >
               <div className="flex items-center justify-between">
@@ -97,9 +119,9 @@ export function LeftSidebar() {
                     {item.label}
                   </span>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-all flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 shadow-sm">
-                  <GripVertical className="h-3 w-3" />
-                  <span>+ Drag</span>
+                <div className="flex items-center space-x-1 text-[10px] font-semibold text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 shadow-sm">
+                  <GripVertical className="h-3 w-3 hidden md:inline" />
+                  <span>+ Add</span>
                 </div>
               </div>
               <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
@@ -113,7 +135,7 @@ export function LeftSidebar() {
   );
 }
 
-export function RightSidebar() {
+export function RightSidebar({ className = "" }: SidebarProps) {
   const {
     nodes,
     selectedNodeId,
@@ -132,7 +154,7 @@ export function RightSidebar() {
 
   if (!selectedNode) {
     return (
-      <aside className="w-64 border-l border-slate-800/80 bg-[#0F172A]/40 p-4 flex flex-col h-full items-center justify-center text-slate-500 text-center shrink-0 z-10 backdrop-blur-xl">
+      <aside className={`w-full md:w-64 border-l border-slate-800/80 bg-[#0F172A]/90 md:bg-[#0F172A]/40 p-4 flex flex-col h-full items-center justify-center text-slate-500 text-center shrink-0 z-10 backdrop-blur-xl ${className}`}>
         <div className="rounded-2xl border border-dashed border-slate-800 p-6 max-w-xs bg-slate-950/60 shadow-xl">
           <p className="text-xs leading-relaxed text-slate-400">
             Select a node on the canvas to configure its settings or inspect live output results.
@@ -168,7 +190,7 @@ export function RightSidebar() {
   const formattedOutputText = getFormattedOutput();
 
   return (
-    <aside className="w-64 border-l border-slate-800/80 bg-[#0F172A]/40 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-xl custom-scrollbar">
+    <aside className={`w-full md:w-64 border-l border-slate-800/80 bg-[#0F172A]/90 md:bg-[#0F172A]/40 p-4 flex flex-col h-full overflow-y-auto shrink-0 z-10 backdrop-blur-xl custom-scrollbar ${className}`}>
       {/* Sidebar Header */}
       <div className="pb-4 border-b border-zinc-800/80 flex justify-between items-center mb-5">
         <div>

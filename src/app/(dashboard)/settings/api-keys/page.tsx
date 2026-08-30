@@ -160,8 +160,8 @@ export default function ApiKeysSettingsPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
       {/* Universal Navigation Header */}
-      <header className="border-b border-zinc-800 bg-zinc-900/40 px-8 py-4 backdrop-blur flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <header className="border-b border-zinc-800 bg-zinc-900/40 px-4 sm:px-8 py-3 sm:py-4 backdrop-blur flex items-center justify-between">
+        <div className="flex items-center space-x-3 sm:space-x-4">
           <Link
             href="/workflows"
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 transition-all"
@@ -179,42 +179,42 @@ export default function ApiKeysSettingsPage() {
               <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
                 orchestra.ai
               </h1>
-              <p className="text-[10px] text-zinc-500">API Key Settings</p>
+              <p className="text-[10px] text-zinc-500 hidden sm:block">API Key Settings</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <Link
             href="/workflows"
-            className="inline-flex items-center space-x-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:text-zinc-50 px-3.5 py-2 text-xs font-semibold text-zinc-300 transition-all"
+            className="inline-flex items-center space-x-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:text-zinc-50 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-semibold text-zinc-300 transition-all"
           >
             <span>Workflows</span>
           </Link>
 
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="inline-flex items-center space-x-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:text-zinc-50 px-3.5 py-2 text-xs font-semibold text-zinc-400 transition-all"
+            className="inline-flex items-center space-x-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 hover:text-zinc-50 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-semibold text-zinc-400 transition-all"
             title={`Logged in as ${session?.user?.email}`}
           >
             <LogOut className="h-3.5 w-3.5" />
-            <span>Sign Out</span>
+            <span className="hidden sm:inline">Sign Out</span>
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-8 py-10 space-y-8">
-        <div className="flex items-center justify-between">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-zinc-100">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">
               LLM Provider Credentials
             </h2>
-            <p className="text-sm text-zinc-400 mt-1">
+            <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
               Store your personal Google Gemini API key to execute AI Engine nodes in your workflows. Your keys are encrypted using AES-256 and never logged or exposed.
             </p>
           </div>
-          <div className="flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
+          <div className="inline-flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg shrink-0 self-start sm:self-auto">
             <ShieldCheck className="h-4 w-4" />
             <span>AES-256 Encrypted</span>
           </div>
@@ -222,23 +222,23 @@ export default function ApiKeysSettingsPage() {
 
         {/* Status Banners */}
         {error && (
-          <div className="flex items-center space-x-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+          <div className="flex items-center space-x-3 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 sm:p-4 text-xs sm:text-sm text-red-400">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {successMessage && (
-          <div className="flex items-center space-x-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-400">
+          <div className="flex items-center space-x-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 sm:p-4 text-xs sm:text-sm text-emerald-400">
             <CheckCircle2 className="h-5 w-5 shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
 
         {/* Add API Key Form Card */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 space-y-6">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-4 sm:p-6 space-y-5 sm:space-y-6">
           <div className="flex items-center space-x-3 border-b border-zinc-800/80 pb-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
               <Plus className="h-4 w-4" />
             </div>
             <div>
@@ -316,7 +316,7 @@ export default function ApiKeysSettingsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center space-x-2 rounded-lg bg-teal-500 hover:bg-teal-400 px-4 py-2 text-sm font-semibold text-zinc-950 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 rounded-lg bg-teal-500 hover:bg-teal-400 px-4 py-2 text-sm font-semibold text-zinc-950 transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -350,7 +350,7 @@ export default function ApiKeysSettingsPage() {
               <Loader2 className="h-6 w-6 animate-spin text-zinc-600" />
             </div>
           ) : keys.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/10 p-12 text-center space-y-3">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/10 p-8 sm:p-12 text-center space-y-3">
               <Key className="h-8 w-8 text-zinc-600" />
               <p className="text-sm font-medium text-zinc-300">
                 No API keys configured yet
@@ -360,8 +360,8 @@ export default function ApiKeysSettingsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/20">
-              <table className="w-full text-left text-sm">
+            <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/20">
+              <table className="w-full text-left text-sm min-w-[540px]">
                 <thead className="border-b border-zinc-800 bg-zinc-900/60 text-xs font-medium text-zinc-400">
                   <tr>
                     <th className="px-6 py-3">Provider</th>

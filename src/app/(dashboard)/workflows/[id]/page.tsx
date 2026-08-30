@@ -41,6 +41,9 @@ export default function WorkflowEditorPage() {
   const [runError, setRunError] = React.useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Mobile Workspace Navigation State
+  const [mobileTab, setMobileTab] = useState<"palette" | "canvas" | "properties">("canvas");
+
   // Inline Title Editing State
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState("");
@@ -98,10 +101,7 @@ export default function WorkflowEditorPage() {
 
     const hasTriggerNode = nodes.some((n) => n.data.type === "TRIGGER");
     if (!hasTriggerNode) {
-      return {
-        valid: false,
-        reason: "Workflow must contain at least one Trigger node.",
-      };
+      return { valid: false, reason: "Workflow must have a Trigger node." };
     }
 
     try {
@@ -111,16 +111,19 @@ export default function WorkflowEditorPage() {
         label: n.data.label,
         config: n.data.config,
       }));
+
       const engineEdges: EngineEdge[] = edges.map((e) => ({
         id: e.id,
         source: e.source,
         target: e.target,
+        sourceHandle: e.sourceHandle,
+        targetHandle: e.targetHandle,
       }));
 
       topologicalSort(engineNodes, engineEdges);
       return { valid: true };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Circular loop detected";
+    } catch (cycleErr: unknown) {
+      const msg = cycleErr instanceof Error ? cycleErr.message : String(cycleErr);
       return { valid: false, reason: msg };
     }
   };
@@ -128,15 +131,14 @@ export default function WorkflowEditorPage() {
   const validation = getGraphValidation();
 
   const handleSave = async () => {
-    setSaveStatus("idle");
-    await saveWorkflow(id);
-    const storeError = useCanvasStore.getState().error;
-    if (storeError) {
+    try {
+      setSaveStatus("idle");
+      await saveWorkflow(id);
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
-    } else {
-      setSaveStatus("success");
-      setTimeout(() => setSaveStatus("idle"), 2000);
     }
   };
 
@@ -198,7 +200,6 @@ export default function WorkflowEditorPage() {
     setRunState("running");
     setRunError(null);
     setNodeStatuses(new Map());
-    setNodeRunResults(new Map());
 
     try {
       const res = await fetch(`/api/workflows/${id}/run`, {
@@ -206,15 +207,17 @@ export default function WorkflowEditorPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to start workflow run");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to trigger workflow run");
       }
 
-      const { runId } = await res.json();
-      pollRunStatus(runId);
+      const data = await res.json();
+      if (data.runId) {
+        pollRunStatus(data.runId);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to start run";
       setRunState("failed");
+      const msg = err instanceof Error ? err.message : String(err);
       setRunError(msg);
       setTimeout(() => {
         setRunState("idle");
@@ -223,37 +226,39 @@ export default function WorkflowEditorPage() {
     }
   };
 
-  if (isLoading || authStatus === "loading") {
+  if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100">
+      <div className="flex h-screen items-center justify-center bg-[#090D16] text-slate-100">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
-          <p className="text-sm text-zinc-400">Loading your workflow canvas...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+          <p className="text-sm font-medium text-slate-400">
+            Loading workflow canvas...
+          </p>
         </div>
       </div>
     );
   }
 
-  if (error && !isLoading) {
+  if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100 p-4">
-        <div className="max-w-md w-full space-y-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-center shadow-xl">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20 text-red-400">
-            <AlertCircle className="h-6 w-6" />
+      <div className="flex h-screen items-center justify-center bg-[#090D16] text-slate-100 p-4">
+        <div className="flex flex-col items-center space-y-4 max-w-md text-center bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl">
+          <AlertCircle className="h-10 w-10 text-red-400" />
+          <div>
+            <h2 className="text-lg font-bold text-slate-100">
+              Error Loading Workflow
+            </h2>
+            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              {error}
+            </p>
           </div>
-          <h2 className="text-lg font-bold text-red-400">Unable to Load Workflow</h2>
-          <p className="text-xs text-zinc-300 leading-relaxed bg-zinc-950/60 p-3 rounded-lg border border-red-500/20">
-            {error}
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={() => router.push("/workflows")}
-              className="inline-flex items-center space-x-2 rounded-lg bg-zinc-900 border border-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-800 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Return to Workflows Dashboard</span>
-            </button>
-          </div>
+          <button
+            onClick={() => router.push("/workflows")}
+            className="inline-flex items-center space-x-2 rounded-lg bg-zinc-900 border border-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-800 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Return to Workflows Dashboard</span>
+          </button>
         </div>
       </div>
     );
@@ -262,11 +267,11 @@ export default function WorkflowEditorPage() {
   return (
     <div className="flex flex-col h-screen bg-[#090D16] text-slate-100 overflow-hidden">
       {/* Canvas Header Bar */}
-      <header className="flex h-16 items-center justify-between border-b border-slate-800/80 bg-[#0F172A]/60 px-6 backdrop-blur-xl shrink-0 z-10 shadow-xl">
-        <div className="flex items-center space-x-4">
+      <header className="flex flex-wrap md:flex-nowrap min-h-[56px] md:h-16 items-center justify-between border-b border-slate-800/80 bg-[#0F172A]/60 px-3 sm:px-6 py-2 md:py-0 backdrop-blur-xl shrink-0 z-10 shadow-xl gap-2 sm:gap-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
           <Link
             href="/workflows"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-100 transition-all shadow-sm"
+            className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-100 transition-all shadow-sm shrink-0"
             title="Back to Workflows Dashboard"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -274,13 +279,13 @@ export default function WorkflowEditorPage() {
 
           <div className="h-5 w-px bg-slate-800 hidden sm:block" />
 
-          <div className="flex items-center space-x-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-sm shadow-cyan-500/10">
-              <WorkflowIcon className="h-5 w-5" />
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-sm shadow-cyan-500/10 shrink-0">
+              <WorkflowIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
 
             {/* Prominent Workflow Title & Muted ID */}
-            <div>
+            <div className="min-w-0 max-w-[130px] sm:max-w-xs md:max-w-md">
               {isEditingTitle ? (
                 <input
                   type="text"
@@ -291,31 +296,31 @@ export default function WorkflowEditorPage() {
                     if (e.key === "Enter") handleTitleSubmit();
                   }}
                   autoFocus
-                  className="rounded-lg border border-cyan-500/60 bg-slate-950 px-2.5 py-0.5 text-base font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                  className="w-full rounded-lg border border-cyan-500/60 bg-slate-950 px-2 py-0.5 text-xs sm:text-base font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                 />
               ) : (
                 <button
                   onClick={() => setIsEditingTitle(true)}
-                  className="group flex items-center space-x-2 text-left hover:bg-slate-800/50 px-2 py-0.5 rounded-lg transition-colors"
+                  className="group flex items-center space-x-1.5 text-left hover:bg-slate-800/50 px-1.5 py-0.5 rounded-lg transition-colors truncate w-full"
                   title="Click to rename workflow"
                 >
-                  <span className="text-base font-bold text-slate-100 tracking-tight">
+                  <span className="text-xs sm:text-base font-bold text-slate-100 tracking-tight truncate">
                     {workflowName}
                   </span>
-                  <Pencil className="h-3.5 w-3.5 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </button>
               )}
-              <p className="text-[10px] text-slate-500 font-mono tracking-wider px-2">ID: {id}</p>
+              <p className="text-[9px] sm:text-[10px] text-slate-500 font-mono tracking-wider px-1.5 truncate">ID: {id}</p>
             </div>
           </div>
         </div>
 
         {/* Action Controls & Navigation */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
           {/* Pre-Run Validation Tooltip Pill */}
           {!validation.valid && (
             <span
-              className="text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl max-w-xs truncate"
+              className="text-[10px] sm:text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 sm:px-3 py-1 rounded-xl max-w-[120px] sm:max-w-xs truncate"
               title={validation.reason}
             >
               ⚠️ {validation.reason}
@@ -324,71 +329,71 @@ export default function WorkflowEditorPage() {
 
           {/* Execution & Save Status Messages */}
           {saveStatus === "success" && (
-            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Saved</span>
+            <span className="inline-flex items-center space-x-1 text-[10px] sm:text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 sm:px-3 py-1 rounded-xl">
+              <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="hidden sm:inline">Saved</span>
             </span>
           )}
           {saveStatus === "error" && (
-            <span className="text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl">
+            <span className="text-[10px] sm:text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-2 sm:px-3 py-1 rounded-xl">
               Save failed
             </span>
           )}
           {runState === "success" && (
-            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>Run complete</span>
+            <span className="inline-flex items-center space-x-1 text-[10px] sm:text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 sm:px-3 py-1 rounded-xl">
+              <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span>Done</span>
             </span>
           )}
           {runState === "failed" && (
-            <span className="inline-flex items-center space-x-1 text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-xl">
-              <AlertCircle className="h-3.5 w-3.5" />
-              <span>{runError || "Run failed"}</span>
+            <span className="inline-flex items-center space-x-1 text-[10px] sm:text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-2 sm:px-3 py-1 rounded-xl max-w-[120px] sm:max-w-xs truncate">
+              <AlertCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+              <span className="truncate">{runError || "Failed"}</span>
             </span>
           )}
 
           {/* Grouped Primary Action Cluster (Save & Run) */}
-          <div className="flex items-center space-x-2 bg-slate-950/80 p-1 rounded-2xl border border-slate-800/80">
+          <div className="flex items-center space-x-1 sm:space-x-2 bg-slate-950/80 p-1 rounded-2xl border border-slate-800/80">
             {/* Save Button */}
             <button
               onClick={handleSave}
               disabled={isSaving || runState === "running"}
-              className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:bg-slate-800 transition-all disabled:opacity-50"
+              className="inline-flex items-center space-x-1 sm:space-x-1.5 rounded-xl border border-slate-800 bg-slate-900 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:bg-slate-800 transition-all disabled:opacity-50"
             >
               {isSaving ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <Save className="h-3.5 w-3.5 text-slate-400" />
               )}
-              <span>Save</span>
+              <span className="hidden sm:inline">Save</span>
             </button>
 
-            {/* Run Button (Vibrant Neon Glow CTA) */}
+            {/* Run Button */}
             <button
               onClick={handleRunWorkflow}
               disabled={!validation.valid || isSaving || runState === "running"}
-              className="inline-flex items-center space-x-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 px-4 py-1.5 text-xs font-extrabold text-slate-950 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed shadow-[0_0_20px_-3px_rgba(20,184,166,0.5)] border border-cyan-400/40"
+              className="inline-flex items-center space-x-1 sm:space-x-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold text-slate-950 transition-all hover:scale-[1.02] disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed shadow-[0_0_20px_-3px_rgba(20,184,166,0.5)] border border-cyan-400/40"
             >
               {runState === "running" ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Running...</span>
+                  <span className="hidden sm:inline">Running...</span>
                 </>
               ) : (
                 <>
                   <Play className="h-3.5 w-3.5 fill-current" />
-                  <span>Run Workflow</span>
+                  <span>Run</span>
                 </>
               )}
             </button>
           </div>
 
-          <div className="h-5 w-px bg-slate-800 mx-1" />
+          <div className="h-5 w-px bg-slate-800 hidden sm:block" />
 
           {/* Quick Settings Link */}
           <Link
             href="/settings/api-keys"
-            className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:border-slate-700 transition-all"
+            className="inline-flex items-center space-x-1.5 rounded-xl border border-slate-800 bg-slate-950 p-2 sm:px-3 sm:py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:border-slate-700 transition-all"
             title="API Keys Settings"
           >
             <Key className="h-3.5 w-3.5 text-cyan-400" />
@@ -398,7 +403,7 @@ export default function WorkflowEditorPage() {
           {/* Sign Out */}
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="inline-flex items-center space-x-1.5 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+            className="inline-flex items-center space-x-1.5 rounded-xl border border-zinc-800 bg-zinc-950 p-2 sm:px-3 sm:py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 hover:border-zinc-700 transition-all"
             title="Sign Out"
           >
             <LogOut className="h-3.5 w-3.5" />
@@ -407,13 +412,63 @@ export default function WorkflowEditorPage() {
         </div>
       </header>
 
+      {/* Mobile Workspace Navigation Tab Bar */}
+      <div className="flex md:hidden items-center justify-around bg-slate-950 border-b border-slate-800/80 p-1.5 shrink-0 z-20 text-xs font-semibold text-slate-400">
+        <button
+          onClick={() => setMobileTab("palette")}
+          className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
+            mobileTab === "palette"
+              ? "bg-slate-800 text-teal-400 font-bold border border-slate-700/60 shadow-sm"
+              : "hover:text-slate-200"
+          }`}
+        >
+          <span>🧩 Palette</span>
+        </button>
+        <button
+          onClick={() => setMobileTab("canvas")}
+          className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
+            mobileTab === "canvas"
+              ? "bg-slate-800 text-teal-400 font-bold border border-slate-700/60 shadow-sm"
+              : "hover:text-slate-200"
+          }`}
+        >
+          <span>🎨 Canvas</span>
+        </button>
+        <button
+          onClick={() => setMobileTab("properties")}
+          className={`px-3 py-1.5 rounded-xl transition-all flex items-center space-x-1.5 ${
+            mobileTab === "properties"
+              ? "bg-slate-800 text-teal-400 font-bold border border-slate-700/60 shadow-sm"
+              : "hover:text-slate-200"
+          }`}
+        >
+          <span>⚙️ Properties</span>
+        </button>
+      </div>
+
       {/* Main Canvas Workspace */}
       <div className="flex flex-1 overflow-hidden relative">
-        <LeftSidebar />
-        <div className="flex-1 relative">
-          <FlowCanvas nodeStatuses={nodeStatuses} />
+        {/* Desktop Sidebars + Canvas */}
+        <div className="hidden md:flex flex-1 overflow-hidden relative">
+          <LeftSidebar />
+          <div className="flex-1 relative">
+            <FlowCanvas nodeStatuses={nodeStatuses} />
+          </div>
+          <RightSidebar />
         </div>
-        <RightSidebar />
+
+        {/* Mobile Viewports */}
+        <div className="flex md:hidden flex-1 overflow-hidden relative w-full">
+          {mobileTab === "palette" && (
+            <LeftSidebar onNodeAdded={() => setMobileTab("canvas")} />
+          )}
+          {mobileTab === "canvas" && (
+            <FlowCanvas nodeStatuses={nodeStatuses} />
+          )}
+          {mobileTab === "properties" && (
+            <RightSidebar />
+          )}
+        </div>
       </div>
     </div>
   );
