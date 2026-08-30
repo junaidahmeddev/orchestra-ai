@@ -7,6 +7,7 @@ import Link from "next/link";
 import {
   Plus,
   FileText,
+  MessageSquare,
   LogOut,
   Loader2,
   Calendar,
@@ -14,8 +15,10 @@ import {
   Trash2,
   AlertTriangle,
   Sparkles,
+  ArrowRight,
   Workflow as WorkflowIcon,
 } from "lucide-react";
+import { WORKFLOW_TEMPLATES, WorkflowTemplate } from "@/lib/templates";
 
 interface Workflow {
   id: string;
@@ -38,6 +41,9 @@ export default function WorkflowsListPage() {
   const [newWorkflowName, setNewWorkflowName] = useState("");
   const [newWorkflowDesc, setNewWorkflowDesc] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  // Template Instantiation State
+  const [usingTemplateId, setUsingTemplateId] = useState<string | null>(null);
 
   // Delete Modal State
   const [deletingWorkflowId, setDeletingWorkflowId] = useState<string | null>(null);
@@ -104,6 +110,33 @@ export default function WorkflowsListPage() {
       setError(msg || "Failed to create workflow.");
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleUseTemplate = async (template: WorkflowTemplate) => {
+    setUsingTemplateId(template.id);
+    setError(null);
+    try {
+      const res = await fetch("/api/workflows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: template.name,
+          description: template.description,
+          canvasJson: template.canvasJson,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to create workflow from template");
+      }
+
+      const newWorkflow = await res.json();
+      router.push(`/workflows/${newWorkflow.id}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || "Failed to create workflow from template.");
+      setUsingTemplateId(null);
     }
   };
 
@@ -225,6 +258,84 @@ export default function WorkflowsListPage() {
             </button>
           </div>
         )}
+
+        {/* Pre-Built Starter Templates Gallery */}
+        <div className="mb-10 space-y-4">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="h-4 w-4 text-teal-400" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-300">
+              Start with a Pre-Built Template
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {WORKFLOW_TEMPLATES.map((template) => (
+              <div
+                key={template.id}
+                className="group relative flex flex-col justify-between rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 hover:border-teal-500/50 hover:bg-zinc-900/80 transition-all shadow-lg hover:shadow-teal-500/5"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="rounded-xl bg-teal-500/10 p-2 text-teal-400 border border-teal-500/20">
+                        {template.iconName === "MessageSquare" ? (
+                          <MessageSquare className="h-4 w-4" />
+                        ) : (
+                          <FileText className="h-4 w-4" />
+                        )}
+                      </div>
+                      <span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-[10px] font-semibold text-zinc-300 border border-zinc-700/50">
+                        {template.category}
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-mono text-zinc-500">
+                      {template.nodeCount} Nodes
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-bold text-zinc-100 group-hover:text-teal-300 transition-colors">
+                      {template.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+                      {template.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-zinc-800/60 flex items-center justify-between">
+                  <span className="text-[11px] text-zinc-500 font-mono">
+                    Instant Canvas Setup
+                  </span>
+                  <button
+                    onClick={() => handleUseTemplate(template)}
+                    disabled={usingTemplateId === template.id}
+                    className="inline-flex items-center space-x-1.5 rounded-xl bg-teal-500/10 hover:bg-teal-500 hover:text-zinc-950 px-3.5 py-2 text-xs font-bold text-teal-400 border border-teal-500/30 transition-all disabled:opacity-50"
+                  >
+                    {usingTemplateId === template.id ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Initializing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Use Template</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section Header for Saved Workflows */}
+        <div className="mb-4 flex items-center space-x-2">
+          <WorkflowIcon className="h-4 w-4 text-zinc-400" />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-300">
+            Your Workflows
+          </h2>
+        </div>
 
         {/* Workflows List Grid / Empty State */}
         {isLoadingWorkflows ? (

@@ -16,6 +16,8 @@ export interface NodeConfig {
   provider?: "OPENAI" | "ANTHROPIC" | "GEMINI";
   model?: string;
   systemPrompt?: string;
+  userPrompt?: string;
+  prompt?: string;
   temperature?: number;
   language?: "javascript" | "python";
   code?: string;

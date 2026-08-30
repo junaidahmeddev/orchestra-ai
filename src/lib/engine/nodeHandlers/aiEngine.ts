@@ -38,8 +38,8 @@ export async function handleAIEngine(
 
   // Phase 7 currently implements Google Gemini
   if (provider === "GEMINI" || provider === "OPENAI" || provider === "ANTHROPIC") {
-    // Look up user's saved Gemini API key
-    const apiKeyRecord = await db.apiKey.findFirst({
+    // Look up user's saved Gemini API keys ordered by most recent
+    const apiKeyRecords = await db.apiKey.findMany({
       where: {
         userId: input.userId,
         provider: "GEMINI",
@@ -49,24 +49,38 @@ export async function handleAIEngine(
       },
     });
 
-    if (!apiKeyRecord) {
+    if (!apiKeyRecords || apiKeyRecords.length === 0) {
       throw new Error(
         "No Google Gemini API key found for your account. Please add your key in Settings -> API Keys before executing this workflow."
       );
     }
 
-    // Decrypt API key in-memory
+    // Decrypt API key in-memory (trying most recent valid Gemini key)
     let rawApiKey = "";
-    try {
-      rawApiKey = decrypt(apiKeyRecord.encryptedKey, apiKeyRecord.iv);
-    } catch (decryptErr) {
-      throw new Error(
-        "Failed to decrypt stored Gemini API key. Decryption key may have changed or key payload is corrupted."
-      );
+    for (const record of apiKeyRecords) {
+      try {
+        const decrypted = decrypt(record.encryptedKey, record.iv);
+        if (decrypted && decrypted.trim()) {
+          const cleanKey = decrypted.trim();
+          // Gemini API keys start with AIzaSy
+          if (cleanKey.startsWith("AIzaSy")) {
+            rawApiKey = cleanKey;
+            break;
+          }
+          // If no key with AIzaSy is found, keep first non-empty as fallback
+          if (!rawApiKey) {
+            rawApiKey = cleanKey;
+          }
+        }
+      } catch (decryptErr) {
+        // Continue trying next key record if multiple records exist
+      }
     }
 
     if (!rawApiKey) {
-      throw new Error("Decrypted Gemini API key is empty.");
+      throw new Error(
+        "Failed to decrypt stored Gemini API key. Decryption key may have changed or key payload is corrupted. Please re-save your Gemini key in Settings -> API Keys."
+      );
     }
 
     // Extract prompt from upstream input data if present

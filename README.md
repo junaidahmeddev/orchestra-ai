@@ -18,6 +18,13 @@
 
 </div>
 
+## 🌐 Live Demo
+
+Try **orchestra.ai** live on Vercel: **[https://orchestra-ai.vercel.app](https://orchestra-ai.vercel.app)**  
+*> **Note:** Shared demo environment. Register your own free account to create, test, and save custom workflows.*
+
+---
+
 ## 📌 Overview
 
 **orchestra.ai** is an open-source visual workflow automation platform purpose-built for AI agents and multi-node orchestration. It combines the visual drag-and-drop simplicity of tools like Zapier and n8n with an engine built specifically for LLMs, sandboxed code execution, and real-time DAG execution tracking.
@@ -31,11 +38,31 @@ Connect user inputs, AI models, custom scripts, external webhooks, and structure
 | Feature | Description |
 | :--- | :--- |
 | 🎨 **Visual Canvas Editor** | Interactive drag-and-drop workflow builder powered by **React Flow**, complete with custom dynamic nodes, snap-to-grid edge connectors, zoom/pan controls, and minimap navigation. |
-| 🧩 **5 Core Node Types** | <ul><li>⚡ **Trigger Node**: Initiates DAG execution via manual user invocation or automated webhooks.</li><li>🧠 **AI Engine Node**: Multi-LLM provider support (Gemini, OpenAI, Anthropic) with custom system prompts & temperature tuning.</li><li>💻 **Data Processor Node**: Executes custom JavaScript transformation snippets in a safe, sandboxed environment.</li><li>🌐 **Integration Node**: Executes HTTP REST calls (GET/POST/PUT/DELETE) with dynamic variable template substitution.</li><li>🖥️ **Output Node**: Captures and renders final structured output payloads and execution summaries.</li></ul> |
+| 🧩 **5 Core Node Types** | <ul><li>⚡ **Trigger Node**: Initiates DAG execution via manual user invocation (inbound webhook endpoints planned).</li><li>🧠 **AI Engine Node**: Google Gemini support active today with BYOK AES-256 encryption; OpenAI & Anthropic planned (schema-ready).</li><li>💻 **Data Processor Node**: Executes custom JavaScript transformation snippets in a safe, sandboxed environment.</li><li>🌐 **Integration Node**: Executes HTTP REST calls (GET/POST/PUT/DELETE) with dynamic variable template substitution.</li><li>🖥️ **Output Node**: Captures and renders final structured output payloads and execution summaries.</li></ul> |
 | 🔐 **BYOK Architecture** | "Bring Your Own Key" system ensuring user API keys are encrypted at rest using industry-standard **AES-256 GCM** before database storage. |
 | ⚡ **Background Orchestration** | Asynchronous, resilient job queue architecture powered by **Inngest** to prevent serverless execution timeouts during multi-LLM chaining. |
 | 🛡️ **Sandboxed Code Execution** | Isolated JavaScript evaluation powered by **`isolated-vm`** with strict execution timeouts, memory limits, and zero host environment access. |
 | 📊 **Live Execution Tracking** | Real-time visual node status feedback (Pending, Running, Success, Failed), topological DAG sorting, and automatic cycle detection. |
+
+---
+
+## ⚖️ Comparison Matrix
+
+| Feature / Capability | orchestra.ai | n8n | Zapier |
+| :--- | :---: | :---: | :---: |
+| **AI-Native DAG Chaining** | 🟢 Purpose-built LLM context flow | 🟡 Added via AI node extensions | 🔴 Basic linear step actions |
+| **Open Source** | 🟢 [MIT License](LICENSE) | 🟡 Fair-code / Sustainable License | 🔴 Proprietary |
+| **BYOK Pricing Model** | 🟢 Bring Your Own Key (Zero Markup) | 🟡 Self-host or Tiered Cloud | 🔴 Task-based Tiered Billing |
+| **Background Execution Queue** | 🟢 Inngest Async Queues | 🟢 Bull / Redis Workers | 🟢 Proprietary Task Queue |
+| **Sandboxed Execution** | 🟢 `isolated-vm` (Memory & Time Capped) | 🟢 Standard Node VM | 🟡 Limited Code By Zapier |
+
+---
+
+## 🛡️ Security Architecture & Disclosure
+
+* **BYOK API Key Encryption**: User LLM provider keys are encrypted at rest using **AES-256-GCM** with unique initialization vectors (`iv`) before database storage. Keys are decrypted strictly in-memory during node execution steps.
+* **Sandboxed Code Execution**: JavaScript transformation scripts inside Data Processor nodes run in an isolated **V8 `isolated-vm`** isolate with strict resource bounds (128MB memory ceiling, 5-second execution timeout, and zero access to host environment or Node.js global APIs).
+* **Responsible Vulnerability Disclosure**: If you discover a security vulnerability, please report it privately via [GitHub Security Advisories](https://github.com/junaidahmeddev/orchestra-ai/security/advisories) rather than opening a public issue.
 
 ---
 
@@ -201,6 +228,17 @@ orchestra-ai/
 - [x] **Phase 7** — Encrypted API Key Storage (AES-256) & Gemini Integration
 - [x] **Phase 8** — Comprehensive Testing Suite (30 Unit/Integration Tests + Playwright E2E)
 - [x] **Phase 9** — Production Deployment & Documentation (Vercel + Neon + Inngest)
+- [ ] **Phase 10** — Pre-Built Workflow Templates & Multi-LLM Extensions
+  - [x] 1-Click Pre-Built Canvas Workflow Templates (Customer Complaint Auto-Responder & Meeting Notes Extractor)
+  - [ ] Multi-Provider LLM Integration Wrappers (OpenAI GPT-4o & Anthropic Claude 3.5)
+  - [ ] Inbound Automated Webhook Trigger Endpoints & Cron Scheduler
+
+---
+
+## 📄 License & Contributing
+
+- **License**: Released under the [MIT License](LICENSE).
+- **Contributing**: Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
 
 ---
 
@@ -209,3 +247,4 @@ orchestra-ai/
 Made with ❤️ by the **orchestra.ai** Open-Source Team.
 
 </div>
+

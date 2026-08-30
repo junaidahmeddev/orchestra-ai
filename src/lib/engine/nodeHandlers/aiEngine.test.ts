@@ -8,6 +8,7 @@ vi.mock("@/lib/db", () => ({
   db: {
     apiKey: {
       findFirst: vi.fn(),
+      findMany: vi.fn(),
     },
   },
 }));
@@ -47,7 +48,7 @@ describe("handleAIEngine", () => {
   });
 
   it("should throw error if no API key is found for user", async () => {
-    vi.mocked(db.apiKey.findFirst).mockResolvedValue(null);
+    vi.mocked(db.apiKey.findMany).mockResolvedValue([]);
 
     await expect(
       handleAIEngine({
@@ -62,15 +63,17 @@ describe("handleAIEngine", () => {
   it("should successfully decrypt key and execute Gemini generation with variable substitution", async () => {
     const { ciphertext, iv } = encrypt("test-gemini-key");
 
-    vi.mocked(db.apiKey.findFirst).mockResolvedValue({
-      id: "key-1",
-      userId: "user-123",
-      provider: "GEMINI",
-      encryptedKey: ciphertext,
-      iv: iv,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as any);
+    vi.mocked(db.apiKey.findMany).mockResolvedValue([
+      {
+        id: "key-1",
+        userId: "user-123",
+        provider: "GEMINI",
+        encryptedKey: ciphertext,
+        iv: iv,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any,
+    ]);
 
     const result = await handleAIEngine({
       nodeId: "node-1",
@@ -95,15 +98,17 @@ describe("handleAIEngine", () => {
   it("should extract object-based upstream result data cleanly as prompt payload", async () => {
     const { ciphertext, iv } = encrypt("test-gemini-key");
 
-    vi.mocked(db.apiKey.findFirst).mockResolvedValue({
-      id: "key-1",
-      userId: "user-123",
-      provider: "GEMINI",
-      encryptedKey: ciphertext,
-      iv: iv,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as any);
+    vi.mocked(db.apiKey.findMany).mockResolvedValue([
+      {
+        id: "key-1",
+        userId: "user-123",
+        provider: "GEMINI",
+        encryptedKey: ciphertext,
+        iv: iv,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any,
+    ]);
 
     const result = await handleAIEngine({
       nodeId: "node-2",

@@ -87,6 +87,7 @@ export async function POST(req: Request) {
       update: {
         encryptedKey: ciphertext,
         iv,
+        updatedAt: new Date(),
       },
       create: {
         userId: session.user.id,
