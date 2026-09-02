@@ -418,6 +418,25 @@ export function RightSidebar({ className = "" }: SidebarProps) {
                   Use <code className="text-teal-400 font-mono">{"{{previous_output}}"}</code> or <code className="text-teal-400 font-mono">{"{{result}}"}</code> to insert data from upstream AI/Processor nodes.
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                    HMAC Signing Secret (Optional)
+                  </label>
+                  <span className="text-[10px] text-emerald-400 font-mono">Zero-Trust Proof</span>
+                </div>
+                <input
+                  type="password"
+                  placeholder="e.g. whsec_secretkey123"
+                  className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-xs font-mono text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
+                  value={config.signingSecret || ""}
+                  onChange={(e) => handleConfigChange("signingSecret", e.target.value)}
+                />
+                <p className="text-[10px] text-zinc-500 leading-normal">
+                  Attaches <code className="text-emerald-400 font-mono">X-Orchestra-Signature</code> (HMAC-SHA256) header to prove payload provenance.
+                </p>
+              </div>
             </div>
           )}
 

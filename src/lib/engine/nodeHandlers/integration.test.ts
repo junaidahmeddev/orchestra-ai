@@ -84,4 +84,33 @@ describe("Integration Node Handler (handleIntegration)", () => {
       content: "AI Answer: Gemini AI response text",
     });
   });
+
+  it("should attach X-Orchestra-Signature HMAC-SHA256 headers when signingSecret is configured", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: async () => '{"received": true}',
+    } as Response);
+
+    const result = await handleIntegration({
+      nodeId: "node-hmac-1",
+      config: {
+        method: "POST",
+        endpoint: "https://api.example.com/webhook",
+        body: '{"event": "workflow_complete"}',
+        signingSecret: "whsec_test_secret_key_123",
+      },
+      data: {},
+    });
+
+    expect(fetchSpy).toHaveBeenCalled();
+    const fetchCallArgs = fetchSpy.mock.calls[0]?.[1];
+    const headers = (fetchCallArgs?.headers || {}) as Record<string, string>;
+
+    expect(headers["X-Orchestra-Timestamp"]).toBeDefined();
+    expect(headers["X-Orchestra-Signature"]).toMatch(/^t=\d+,v1=[a-f0-9]{64}$/);
+    expect(result.output?.signature).toBe(headers["X-Orchestra-Signature"]);
+    expect(result.output?.signedTimestamp).toBeDefined();
+  });
 });

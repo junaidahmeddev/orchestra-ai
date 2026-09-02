@@ -40,6 +40,7 @@ export interface NodeConfig {
   endpoint?: string;
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: string;
+  signingSecret?: string;
 
   // Output
   format?: string;

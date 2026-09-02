@@ -13,6 +13,7 @@
 //   - Any {{key}} present in the upstream data object
 // ============================================================
 
+import crypto from "crypto";
 import { NodeHandlerInput, NodeHandlerOutput } from "../types";
 
 /**
@@ -119,6 +120,28 @@ export async function handleIntegration(
     "User-Agent": "Orchestra-AI/1.0",
   };
 
+  // HMAC-SHA256 Cryptographic Payload Signing (Zero-Trust Proof)
+  const signingSecret = String(
+    input.config.signingSecret || process.env.ORCHESTRA_SIGNING_SECRET || ""
+  ).trim();
+
+  let signature: string | null = null;
+  let timestamp: number | null = null;
+
+  if (signingSecret) {
+    timestamp = Math.floor(Date.now() / 1000);
+    const bodyToSign = ["GET", "HEAD"].includes(method) ? "" : processedBody;
+    const payloadToSign = `${timestamp}.${bodyToSign}`;
+    const hmacHex = crypto
+      .createHmac("sha256", signingSecret)
+      .update(payloadToSign)
+      .digest("hex");
+
+    signature = `t=${timestamp},v1=${hmacHex}`;
+    headers["X-Orchestra-Timestamp"] = String(timestamp);
+    headers["X-Orchestra-Signature"] = signature;
+  }
+
   try {
     const response = await fetch(processedEndpoint, {
       method,
@@ -161,6 +184,7 @@ export async function handleIntegration(
         endpoint: processedEndpoint,
         method,
         sentBody: parsedSentBody,
+        ...(signature ? { signature, signedTimestamp: timestamp } : {}),
       },
     };
   } catch (error: unknown) {
