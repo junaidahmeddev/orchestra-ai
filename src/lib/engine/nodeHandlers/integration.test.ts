@@ -36,6 +36,16 @@ describe("Integration Node Variable Substitution (substituteVariables)", () => {
     const parsed = JSON.parse(output);
     expect(JSON.parse(parsed.payload)).toEqual({ status: "active", count: 42 });
   });
+
+  it("should replace hyphenated placeholders like {{previous-output}} and {{user-id}}", () => {
+    const template = '{"user": "{{user-id}}", "msg": "{{previous-output}}"}';
+    const data = { "user-id": "usr-99", result: "Task complete" };
+
+    const output = substituteVariables(template, data);
+    const parsed = JSON.parse(output);
+    expect(parsed.user).toBe("usr-99");
+    expect(parsed.msg).toBe("Task complete");
+  });
 });
 
 describe("Integration Node Handler (handleIntegration)", () => {

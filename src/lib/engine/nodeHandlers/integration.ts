@@ -42,9 +42,11 @@ export function substituteVariables(
   const lookupValue = (key: string): unknown => {
     if (
       key === "previous_output" ||
+      key === "previous-output" ||
       key === "previousOutput" ||
       key === "upstream" ||
-      key === "upstream_output"
+      key === "upstream_output" ||
+      key === "upstream-output"
     ) {
       return previousOutput;
     }
@@ -63,7 +65,7 @@ export function substituteVariables(
   const isJsonContext =
     template.trim().startsWith("{") || template.trim().startsWith("[");
 
-  return template.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (match, key) => {
+  return template.replace(/\{\{\s*([\w.-]+)\s*\}\}/g, (match, key) => {
     const val = lookupValue(key);
     if (val === undefined || val === null) {
       return match; // Leave unreplaced if key not found
