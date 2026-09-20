@@ -77,7 +77,7 @@ export const runWorkflow = inngest.createFunction(
         config: n.data.config,
       }));
 
-      const engineEdges: EngineEdge[] = canvas.edges.map((e) => ({
+      const engineEdges: EngineEdge[] = (canvas.edges || []).map((e) => ({
         id: e.id,
         source: e.source,
         target: e.target,
@@ -154,6 +154,9 @@ export const runWorkflow = inngest.createFunction(
 
           // Look up the handler for this node type
           const handler = nodeHandlerRegistry[node.type];
+          if (!handler) {
+            throw new Error(`Unsupported or missing handler for node type "${node.type}"`);
+          }
 
           // Execute the handler
           const result = await handler({

@@ -46,7 +46,7 @@ export async function GET(req: Request, { params }: RouteParams) {
     }
 
     // Verify the user owns the workflow this run belongs to
-    if (workflowRun.workflow.userId !== session.user.id) {
+    if (!workflowRun.workflow || workflowRun.workflow.userId !== session.user.id) {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }
