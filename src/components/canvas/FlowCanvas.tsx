@@ -79,7 +79,7 @@ const CustomNodeComponent = (props: CustomNodeProps) => {
   };
 
   return (
-    <div className="relative">
+    <div className={`relative ${statusBorderClass}`}>
       {statusOverlay}
       {renderNode()}
     </div>

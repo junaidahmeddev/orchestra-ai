@@ -1,9 +1,37 @@
 import React from "react";
 import { Handle, Position } from "reactflow";
-import { Link2 } from "lucide-react";
-import { CustomNode } from "@/store/canvasStore";
+import { Link2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { CustomNode, useCanvasStore } from "@/store/canvasStore";
 
-export default function IntegrationNode({ data, selected }: { data: CustomNode["data"]; selected: boolean }) {
+export default function IntegrationNode({
+  id,
+  data,
+  selected,
+}: {
+  id?: string;
+  data: CustomNode["data"];
+  selected: boolean;
+}) {
+  const nodeRunResults = useCanvasStore((state) => state.nodeRunResults);
+  const runResult = id ? nodeRunResults.get(id) : undefined;
+
+  const getPreviewText = () => {
+    if (!runResult?.output) return "";
+    const out = runResult.output as Record<string, unknown>;
+
+    let text = "";
+    if (typeof out.result === "string") text = out.result;
+    else if (typeof out.status === "number") text = `HTTP ${out.status} ${out.statusText || ""}`;
+    else text = JSON.stringify(out);
+
+    if (text.length > 50) {
+      return text.slice(0, 50) + "...";
+    }
+    return text;
+  };
+
+  const previewText = getPreviewText();
+
   return (
     <div
       className={`relative w-48 rounded-xl border bg-slate-900/80 backdrop-blur-md p-2.5 transition-all duration-200 ${
@@ -36,6 +64,30 @@ export default function IntegrationNode({ data, selected }: { data: CustomNode["
           <span className="font-medium text-slate-400">URL:</span>{" "}
           <span className="font-mono text-slate-200 font-medium text-[9px]">{data.config.endpoint || "N/A"}</span>
         </div>
+
+        {runResult?.status === "SUCCESS" && previewText && (
+          <div className="pt-1.5 mt-1.5 border-t border-slate-800/80 space-y-0.5 rounded-lg border border-teal-500/30 bg-slate-950/90 p-1.5 shadow-inner">
+            <div className="flex items-center space-x-1 text-[8px] font-bold text-teal-400 uppercase tracking-widest">
+              <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
+              <span>Response Data</span>
+            </div>
+            <p className="font-mono text-[9px] leading-relaxed text-slate-300 line-clamp-2">
+              {previewText}
+            </p>
+          </div>
+        )}
+
+        {runResult?.status === "FAILED" && (
+          <div className="pt-1.5 mt-1.5 border-t border-slate-800/80 space-y-0.5 rounded-lg border border-red-500/40 bg-red-950/30 p-1.5">
+            <div className="flex items-center space-x-1 text-[8px] font-bold text-red-400 uppercase tracking-widest">
+              <AlertTriangle className="h-2.5 w-2.5" />
+              <span>Error</span>
+            </div>
+            <p className="font-mono text-[9px] leading-relaxed text-red-300 line-clamp-2">
+              {runResult.errorMessage || "Webhook failed"}
+            </p>
+          </div>
+        )}
       </div>
 
       <Handle
