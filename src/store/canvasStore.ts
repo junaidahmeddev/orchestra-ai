@@ -154,7 +154,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   addNode: (type, position) => {
-    const id = `node_${Date.now()}`;
+    const id = `node_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const labels: Record<CustomNode["data"]["type"], string> = {
       TRIGGER: "Manual Trigger",
       AI_ENGINE: "Gemini AI Engine",
@@ -275,12 +275,14 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to save workflow");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to save workflow");
       }
       set({ isSaving: false });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       set({ error: msg || "Error saving workflow", isSaving: false });
+      throw err;
     }
   },
 }));
