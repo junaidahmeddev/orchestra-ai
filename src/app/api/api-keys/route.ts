@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { encrypt, maskApiKey } from "@/lib/encryption";
+import { encrypt, decrypt, maskApiKey } from "@/lib/encryption";
 import * as z from "zod";
 
 export const dynamic = "force-dynamic";
@@ -33,13 +33,24 @@ export async function GET() {
     });
 
     // Return masked representations only — NEVER return decrypted keys or ciphertext
-    const maskedKeys = apiKeys.map((item) => ({
-      id: item.id,
-      provider: item.provider,
-      label: item.label || "Default Key",
-      createdAt: item.createdAt.toISOString(),
-      updatedAt: item.updatedAt.toISOString(),
-    }));
+    const maskedKeys = apiKeys.map((item) => {
+      let maskedKey = "••••••••";
+      try {
+        const clearText = decrypt(item.encryptedKey, item.iv);
+        maskedKey = maskApiKey(clearText);
+      } catch (err) {
+        console.error(`Failed to decrypt API key ${item.id}:`, err);
+      }
+
+      return {
+        id: item.id,
+        provider: item.provider,
+        label: item.label || "Default Key",
+        maskedKey,
+        createdAt: item.createdAt.toISOString(),
+        updatedAt: item.updatedAt.toISOString(),
+      };
+    });
 
     return NextResponse.json(maskedKeys);
   } catch (error) {
