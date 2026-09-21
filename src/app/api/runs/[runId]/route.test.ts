@@ -61,11 +61,9 @@ describe("GET /api/runs/[runId] (Integration Tests)", () => {
       finishedAt: new Date(),
       errorMessage: null,
       workflowId: "wf-other-user",
-      createdAt: new Date(),
-      updatedAt: new Date(),
       nodeRuns: [],
       workflow: { userId: "user-victim" },
-    });
+    } as any);
 
     const req = new Request("http://localhost:3000/api/runs/run-secret");
     const res = await getRun(req, { params: { runId: "run-secret" } });
@@ -90,8 +88,6 @@ describe("GET /api/runs/[runId] (Integration Tests)", () => {
       finishedAt: now,
       errorMessage: null,
       workflowId: "wf-owner",
-      createdAt: now,
-      updatedAt: now,
       nodeRuns: [
         {
           id: "nr-1",
@@ -103,12 +99,10 @@ describe("GET /api/runs/[runId] (Integration Tests)", () => {
           errorMessage: null,
           startedAt: now,
           finishedAt: now,
-          createdAt: now,
-          updatedAt: now,
         },
       ],
       workflow: { userId: "user-owner" },
-    });
+    } as any);
 
     const req = new Request("http://localhost:3000/api/runs/run-owner-1");
     const res = await getRun(req, { params: { runId: "run-owner-1" } });

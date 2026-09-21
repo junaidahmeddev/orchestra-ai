@@ -172,7 +172,7 @@ export default function HomePage() {
                     stroke="url(#edge-gradient)"
                     strokeWidth="2.5"
                     strokeDasharray="6 4"
-                    className="animate-[dash_20s_linear_infinite]"
+                    className="animate-[flow-edge-dash_1.2s_linear_infinite]"
                   />
                   {/* Path 2: AI Engine -> Data Processor */}
                   <path
@@ -181,6 +181,7 @@ export default function HomePage() {
                     stroke="url(#edge-gradient)"
                     strokeWidth="2.5"
                     strokeDasharray="6 4"
+                    className="animate-[flow-edge-dash_1.2s_linear_infinite]"
                   />
                   {/* Path 3: Data Processor -> Output */}
                   <path

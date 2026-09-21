@@ -25,14 +25,14 @@ describe("canvasStore (Zustand Unit Tests)", () => {
     const nodes = useCanvasStore.getState().nodes;
 
     expect(nodes).toHaveLength(1);
-    expect(nodes[0].type).toBe("AI_ENGINE");
-    expect(nodes[0].data.config.provider).toBe("GEMINI");
-    expect(useCanvasStore.getState().selectedNodeId).toBe(nodes[0].id);
+    expect(nodes[0]!.type).toBe("AI_ENGINE");
+    expect(nodes[0]!.data.config.provider).toBe("GEMINI");
+    expect(useCanvasStore.getState().selectedNodeId).toBe(nodes[0]!.id);
   });
 
   it("should update node config and label", () => {
     useCanvasStore.getState().addNode("INTEGRATION", { x: 0, y: 0 });
-    const nodeId = useCanvasStore.getState().nodes[0].id;
+    const nodeId = useCanvasStore.getState().nodes[0]!.id;
 
     useCanvasStore.getState().updateNodeConfig(nodeId, {
       endpoint: "https://api.example.com/webhook",
@@ -40,7 +40,7 @@ describe("canvasStore (Zustand Unit Tests)", () => {
     });
     useCanvasStore.getState().updateNodeLabel(nodeId, "My Webhook Node");
 
-    const updatedNode = useCanvasStore.getState().nodes[0];
+    const updatedNode = useCanvasStore.getState().nodes[0]!;
     expect(updatedNode.data.label).toBe("My Webhook Node");
     expect(updatedNode.data.config.endpoint).toBe("https://api.example.com/webhook");
   });
@@ -49,7 +49,9 @@ describe("canvasStore (Zustand Unit Tests)", () => {
     useCanvasStore.getState().addNode("TRIGGER", { x: 0, y: 0 });
     useCanvasStore.getState().addNode("OUTPUT", { x: 200, y: 0 });
 
-    const [n1, n2] = useCanvasStore.getState().nodes;
+    const nodes = useCanvasStore.getState().nodes;
+    const n1 = nodes[0]!;
+    const n2 = nodes[1]!;
     useCanvasStore.setState({
       edges: [{ id: "e1", source: n1.id, target: n2.id }],
     });
