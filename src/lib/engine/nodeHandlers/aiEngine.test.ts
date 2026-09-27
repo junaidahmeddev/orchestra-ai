@@ -57,7 +57,7 @@ describe("handleAIEngine", () => {
         data: {},
         userId: "user-123",
       })
-    ).rejects.toThrow("No Google Gemini API key found");
+    ).rejects.toThrow(/No GEMINI API key found/i);
   });
 
   it("should successfully decrypt key and execute Gemini generation with variable substitution", async () => {
@@ -126,5 +126,41 @@ describe("handleAIEngine", () => {
     expect(result.output.upstreamData).toEqual({
       result: { summary: "Transformed Data", itemsCount: 10 },
     });
+  });
+
+  it("should query for OPENAI provider API key when provider is OPENAI", async () => {
+    const { ciphertext, iv } = encrypt("sk-proj-test-openai-key-12345");
+
+    vi.mocked(db.apiKey.findMany).mockResolvedValue([
+      {
+        id: "key-openai-1",
+        userId: "user-123",
+        provider: "OPENAI",
+        encryptedKey: ciphertext,
+        iv: iv,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any,
+    ]);
+
+    const result = await handleAIEngine({
+      nodeId: "node-3",
+      config: {
+        provider: "OPENAI",
+        model: "gpt-4o",
+      },
+      data: { result: "Test input" },
+      userId: "user-123",
+    });
+
+    expect(db.apiKey.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: "user-123",
+          provider: "OPENAI",
+        }),
+      })
+    );
+    expect(result.output.result).toBe("AI Generated Response Content");
   });
 });

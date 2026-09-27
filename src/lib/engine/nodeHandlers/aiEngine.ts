@@ -36,38 +36,52 @@ export async function handleAIEngine(
     ? substituteVariables(rawUserPrompt, input.data)
     : "";
 
-  // Phase 7 currently implements Google Gemini
+  // Phase 7 implements LLM generation (Gemini SDK runtime with fallback)
   if (provider === "GEMINI" || provider === "OPENAI" || provider === "ANTHROPIC") {
-    // Look up user's saved Gemini API keys ordered by most recent
-    const apiKeyRecords = await db.apiKey.findMany({
+    // Look up user's saved API keys for requested provider (falling back to GEMINI if needed)
+    let apiKeyRecords = await db.apiKey.findMany({
       where: {
         userId: input.userId,
-        provider: "GEMINI",
+        provider: provider as "OPENAI" | "ANTHROPIC" | "GEMINI",
       },
       orderBy: {
         updatedAt: "desc",
       },
     });
 
+    if ((!apiKeyRecords || apiKeyRecords.length === 0) && provider !== "GEMINI") {
+      apiKeyRecords = await db.apiKey.findMany({
+        where: {
+          userId: input.userId,
+          provider: "GEMINI",
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+      });
+    }
+
     if (!apiKeyRecords || apiKeyRecords.length === 0) {
       throw new Error(
-        "No Google Gemini API key found for your account. Please add your key in Settings -> API Keys before executing this workflow."
+        `No ${provider} API key found for your account. Please add your key in Settings -> API Keys before executing this workflow.`
       );
     }
 
-    // Decrypt API key in-memory (trying most recent valid Gemini key)
+    // Decrypt API key in-memory (trying most recent valid key)
     let rawApiKey = "";
     for (const record of apiKeyRecords) {
       try {
         const decrypted = decrypt(record.encryptedKey, record.iv);
         if (decrypted && decrypted.trim()) {
           const cleanKey = decrypted.trim();
-          // Gemini API keys start with AIzaSy
-          if (cleanKey.startsWith("AIzaSy")) {
+          if (
+            (provider === "GEMINI" && cleanKey.startsWith("AIzaSy")) ||
+            ((provider === "OPENAI" || provider === "ANTHROPIC") && cleanKey.startsWith("sk-"))
+          ) {
             rawApiKey = cleanKey;
             break;
           }
-          // If no key with AIzaSy is found, keep first non-empty as fallback
+          // If no key matching provider prefix is found, keep first non-empty as fallback
           if (!rawApiKey) {
             rawApiKey = cleanKey;
           }
