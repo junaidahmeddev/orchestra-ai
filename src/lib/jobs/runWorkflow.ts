@@ -149,6 +149,7 @@ export const runWorkflow = inngest.createFunction(
             const parentOutput = nodeOutputs.get(parentId);
             if (parentOutput) {
               Object.assign(mergedInput, parentOutput);
+              mergedInput[parentId] = parentOutput;
             }
           }
 

@@ -46,6 +46,15 @@ describe("Integration Node Variable Substitution (substituteVariables)", () => {
     expect(parsed.user).toBe("usr-99");
     expect(parsed.msg).toBe("Task complete");
   });
+
+  it("should resolve node-id scoped dot notation variables like {{node_1.result}}", () => {
+    const template = '{"answer": "{{node_1.result}}"}';
+    const data = { node_1: { result: "Output from Node 1" } };
+
+    const output = substituteVariables(template, data);
+    const parsed = JSON.parse(output);
+    expect(parsed.answer).toBe("Output from Node 1");
+  });
 });
 
 describe("Integration Node Handler (handleIntegration)", () => {
