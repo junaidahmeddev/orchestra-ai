@@ -46,4 +46,27 @@ describe("handleOutput", () => {
     expect(res.output.result).toContain("## Workflow Output");
     expect(res.output.result).toContain('"foo": "bar"');
   });
+
+  it("should correctly format numeric and boolean result values when format is plain_text", async () => {
+    const resNumber = await handleOutput({
+      nodeId: "out-num",
+      config: { format: "plain_text" },
+      data: { result: 42 },
+    });
+    expect(resNumber.output.result).toBe("42");
+
+    const resZero = await handleOutput({
+      nodeId: "out-zero",
+      config: { format: "plain_text" },
+      data: { result: 0 },
+    });
+    expect(resZero.output.result).toBe("0");
+
+    const resBool = await handleOutput({
+      nodeId: "out-bool",
+      config: { format: "plain_text" },
+      data: { result: false },
+    });
+    expect(resBool.output.result).toBe("false");
+  });
 });

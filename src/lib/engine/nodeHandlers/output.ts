@@ -12,9 +12,12 @@ export async function handleOutput(input: NodeHandlerInput): Promise<NodeHandler
   const format = (input.config.format || "json").toLowerCase();
 
   const extractMainText = (data: Record<string, unknown>): string | null => {
-    if (typeof data.result === "string" && data.result.trim()) return data.result;
-    if (typeof data.text === "string" && data.text.trim()) return data.text;
-    if (typeof data.output === "string" && data.output.trim()) return data.output;
+    const candidate = data.result ?? data.text ?? data.output;
+    if (candidate !== undefined && candidate !== null) {
+      if (typeof candidate === "string") return candidate;
+      if (typeof candidate === "number" || typeof candidate === "boolean") return String(candidate);
+      if (typeof candidate === "object") return JSON.stringify(candidate, null, 2);
+    }
     return null;
   };
 
