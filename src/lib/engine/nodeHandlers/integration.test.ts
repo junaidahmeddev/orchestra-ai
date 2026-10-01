@@ -55,6 +55,12 @@ describe("Integration Node Variable Substitution (substituteVariables)", () => {
     const parsed = JSON.parse(output);
     expect(parsed.answer).toBe("Output from Node 1");
   });
+
+  it("should handle null or undefined data payload gracefully without throwing TypeError", () => {
+    const template = '{"message": "Hello {{name}}"}';
+    const output = substituteVariables(template, undefined as any);
+    expect(output).toBe('{"message": "Hello {{name}}"}');
+  });
 });
 
 describe("Integration Node Handler (handleIntegration)", () => {

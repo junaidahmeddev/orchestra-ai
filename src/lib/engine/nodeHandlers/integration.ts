@@ -24,19 +24,20 @@ export function substituteVariables(
   data: Record<string, unknown>
 ): string {
   if (!template) return "";
+  const safeData = data || {};
 
   // Derive "previous_output" from common upstream output fields
   const previousOutput =
-    typeof data.result === "string"
-      ? data.result
-      : typeof data.output === "string"
-      ? data.output
-      : typeof data.text === "string"
-      ? data.text
-      : typeof data.result === "object" && data.result !== null
-      ? JSON.stringify(data.result)
-      : Object.keys(data).length > 0
-      ? JSON.stringify(data)
+    typeof safeData.result === "string"
+      ? safeData.result
+      : typeof safeData.output === "string"
+      ? safeData.output
+      : typeof safeData.text === "string"
+      ? safeData.text
+      : typeof safeData.result === "object" && safeData.result !== null
+      ? JSON.stringify(safeData.result)
+      : Object.keys(safeData).length > 0
+      ? JSON.stringify(safeData)
       : "";
 
   const lookupValue = (key: string): unknown => {
@@ -57,7 +58,7 @@ export function substituteVariables(
         return (acc as Record<string, unknown>)[k];
       }
       return undefined;
-    }, data);
+    }, safeData);
 
     return val;
   };
