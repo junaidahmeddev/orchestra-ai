@@ -63,7 +63,7 @@ export async function handleDataProcessor(
     const jail = context.global;
     await jail.set(
       "__inputJSON",
-      JSON.stringify(data),
+      JSON.stringify(data || {}),
       { copy: true }
     );
 

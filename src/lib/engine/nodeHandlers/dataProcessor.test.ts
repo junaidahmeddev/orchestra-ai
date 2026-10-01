@@ -64,4 +64,18 @@ describe("handleDataProcessor (isolated-vm Sandbox Unit Tests)", () => {
     expect(result.output.executedSuccessfully).toBe(true);
     expect(result.output.result).toBeNull();
   });
+
+  it("should handle undefined data input payload gracefully without throwing JSON parse error", async () => {
+    const result = await handleDataProcessor({
+      nodeId: "node-dp-nodata",
+      config: {
+        language: "javascript",
+        code: "return Object.keys(input).length;",
+      },
+      data: undefined as any,
+    });
+
+    expect(result.output.executedSuccessfully).toBe(true);
+    expect(result.output.result).toBe(0);
+  });
 });
