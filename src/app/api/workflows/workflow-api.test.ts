@@ -156,6 +156,21 @@ describe("Workflow CRUD API Routes (Integration Tests)", () => {
       expect(data.name).toBe("AI Summarizer");
     });
 
+    it("should reject workflow creation when name consists of empty whitespace", async () => {
+      vi.mocked(getServerSession).mockResolvedValueOnce(mockSession);
+
+      const req = new Request("http://localhost:3000/api/workflows", {
+        method: "POST",
+        body: JSON.stringify({ name: "   " }),
+      });
+
+      const res = await createWorkflow(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(data.error).toBe("Name is required");
+    });
+
     it("2. READ: should retrieve the single workflow for the owner", async () => {
       vi.mocked(getServerSession).mockResolvedValueOnce(mockSession);
       vi.mocked(db.workflow.findUnique).mockResolvedValueOnce({

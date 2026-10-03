@@ -8,7 +8,7 @@ import * as z from "zod";
 export const dynamic = "force-dynamic";
 
 const updateWorkflowSchema = z.object({
-  name: z.string().min(1, "Name cannot be empty").optional(),
+  name: z.string().trim().min(1, "Name cannot be empty").optional(),
   description: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
   canvasJson: z.record(z.unknown()).optional(),

@@ -33,7 +33,7 @@ export async function GET(req: Request, { params }: RouteParams) {
       where: { id: runId },
       include: {
         nodeRuns: {
-          orderBy: { startedAt: "asc" },
+          orderBy: [{ startedAt: "asc" }, { id: "asc" }],
         },
         workflow: {
           select: { userId: true },
