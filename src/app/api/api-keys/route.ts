@@ -11,8 +11,8 @@ const createApiKeySchema = z.object({
   provider: z.enum(["OPENAI", "ANTHROPIC", "GEMINI"], {
     required_error: "Provider is required",
   }),
-  key: z.string().min(1, "API Key is required"),
-  label: z.string().optional(),
+  key: z.string().trim().min(1, "API Key is required"),
+  label: z.string().trim().optional(),
 });
 
 export async function GET() {

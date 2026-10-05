@@ -102,4 +102,25 @@ describe("API Keys API Route (Integration Tests)", () => {
     expect(data.id).toBe("key-saved-1");
     expect(data.maskedKey).toBe("AIza...cdef");
   });
+
+  it("should return 400 Bad Request when API key consists of empty whitespace", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({
+      user: { id: "user-123", email: "user@orchestra.ai" },
+      expires: "2099-01-01",
+    });
+
+    const req = new Request("http://localhost:3000/api/api-keys", {
+      method: "POST",
+      body: JSON.stringify({
+        provider: "GEMINI",
+        key: "   ",
+      }),
+    });
+
+    const res = await createApiKey(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("API Key is required");
+  });
 });
