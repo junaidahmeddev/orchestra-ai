@@ -4,9 +4,9 @@ import { hash } from "bcryptjs";
 import * as z from "zod";
 
 const registerSchema = z.object({
-  email: z.string().email("Invalid email format"),
+  email: z.string().trim().email("Invalid email format"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  name: z.string().min(1, "Name is required").optional(),
+  name: z.string().trim().optional(),
 });
 
 export async function POST(req: Request) {

@@ -161,4 +161,27 @@ describe("NextAuth Credentials Authorize (Login Flow Integration Tests)", () => 
       image: null,
     });
   });
+
+  it("should trim surrounding whitespace from email during login authorization", async () => {
+    const realBcryptHash = await hash("correctpassword", 10);
+    vi.mocked(db.user.findUnique).mockResolvedValueOnce({
+      id: "user-trimmed",
+      email: "test@orchestra.ai",
+      name: "Test User",
+      passwordHash: realBcryptHash,
+      image: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const user = await authorizeFn({
+      email: "  test@orchestra.ai  ",
+      password: "correctpassword",
+    });
+
+    expect(user).toBeDefined();
+    expect(db.user.findUnique).toHaveBeenCalledWith({
+      where: { email: "test@orchestra.ai" },
+    });
+  });
 });
