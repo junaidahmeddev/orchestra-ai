@@ -75,4 +75,18 @@ describe("canvasStore (Zustand Unit Tests)", () => {
     expect(useCanvasStore.getState().error).toBe("Database transaction error");
     expect(useCanvasStore.getState().isSaving).toBe(false);
   });
+
+  it("should revert workflowName and set error when updateWorkflowName API fails", async () => {
+    useCanvasStore.setState({ workflowName: "Original Title" });
+
+    globalFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: "Forbidden: You do not own this workflow" }),
+    });
+
+    await useCanvasStore.getState().updateWorkflowName("wf-123", "New Title");
+
+    expect(useCanvasStore.getState().workflowName).toBe("Original Title");
+    expect(useCanvasStore.getState().error).toBe("Forbidden: You do not own this workflow");
+  });
 });

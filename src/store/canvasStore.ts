@@ -118,15 +118,22 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   updateWorkflowName: async (workflowId, name) => {
     const trimmed = name.trim() || "Untitled Workflow";
+    const previousName = get().workflowName;
     set({ workflowName: trimmed });
     try {
-      await fetch(`/api/workflows/${workflowId}`, {
+      const res = await fetch(`/api/workflows/${workflowId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmed }),
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        set({ workflowName: previousName, error: errorData.error || "Failed to update workflow name" });
+      }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error("Failed to update workflow name:", err);
+      set({ workflowName: previousName, error: msg });
     }
   },
 
