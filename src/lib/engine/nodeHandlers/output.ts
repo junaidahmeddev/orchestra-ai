@@ -11,6 +11,8 @@ import { NodeHandlerInput, NodeHandlerOutput } from "../types";
 export async function handleOutput(input: NodeHandlerInput): Promise<NodeHandlerOutput> {
   const format = (input.config.format || "json").toLowerCase();
 
+  const safeData = input.data || {};
+
   const extractMainText = (data: Record<string, unknown>): string | null => {
     const candidate = data.result ?? data.text ?? data.output;
     if (candidate !== undefined && candidate !== null) {
@@ -21,24 +23,24 @@ export async function handleOutput(input: NodeHandlerInput): Promise<NodeHandler
     return null;
   };
 
-  const mainText = extractMainText(input.data);
+  const mainText = extractMainText(safeData);
   let formattedResult: unknown;
 
   switch (format) {
     case "markdown":
       formattedResult = mainText
         ? mainText
-        : `## Workflow Output\n\n\`\`\`json\n${JSON.stringify(input.data, null, 2)}\n\`\`\``;
+        : `## Workflow Output\n\n\`\`\`json\n${JSON.stringify(safeData, null, 2)}\n\`\`\``;
       break;
     case "plain_text":
     case "text":
       formattedResult = mainText
         ? mainText
-        : JSON.stringify(input.data, null, 2);
+        : JSON.stringify(safeData, null, 2);
       break;
     case "json":
     default:
-      formattedResult = input.data;
+      formattedResult = safeData;
       break;
   }
 

@@ -102,19 +102,24 @@ export async function handleIntegration(
 
   // If no body provided for POST/PUT/PATCH, construct default payload with previous output
   if (!processedBody && ["POST", "PUT", "PATCH"].includes(method)) {
+    const safeData = input.data || {};
     const previousOutput =
-      typeof input.data.result === "string"
-        ? input.data.result
-        : typeof input.data.output === "string"
-        ? input.data.output
-        : typeof input.data.text === "string"
-        ? input.data.text
-        : JSON.stringify(input.data);
+      typeof safeData.result === "string"
+        ? safeData.result
+        : typeof safeData.output === "string"
+        ? safeData.output
+        : typeof safeData.text === "string"
+        ? safeData.text
+        : typeof safeData.result === "object" && safeData.result !== null
+        ? JSON.stringify(safeData.result)
+        : Object.keys(safeData).length > 0
+        ? JSON.stringify(safeData)
+        : "";
 
     // Default payload compatible with Discord/Slack webhooks ({ content: "..." })
     processedBody = JSON.stringify({
       content: previousOutput || "Orchestra-AI Workflow Event",
-      output: input.data,
+      output: safeData,
     });
   }
 
@@ -149,7 +154,7 @@ export async function handleIntegration(
     const response = await fetch(processedEndpoint, {
       method,
       headers,
-      body: ["GET", "HEAD"].includes(method) ? undefined : processedBody,
+      body: ["GET", "HEAD"].includes(method) || !processedBody ? undefined : processedBody,
     });
 
     const responseText = await response.text();

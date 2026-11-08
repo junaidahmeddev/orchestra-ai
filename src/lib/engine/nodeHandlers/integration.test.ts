@@ -138,4 +138,28 @@ describe("Integration Node Handler (handleIntegration)", () => {
     expect(result.output?.signature).toBe(headers["X-Orchestra-Signature"]);
     expect(result.output?.signedTimestamp).toBeDefined();
   });
+
+  it("should safely construct default POST body when body is omitted and data is undefined", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: async () => '{"ok": true}',
+    } as Response);
+
+    const result = await handleIntegration({
+      nodeId: "node-default-body",
+      config: {
+        method: "POST",
+        endpoint: "https://example.com/webhook",
+      },
+      data: undefined as any,
+    });
+
+    expect(fetchSpy).toHaveBeenCalled();
+    expect(result.output.sentBody).toEqual({
+      content: "Orchestra-AI Workflow Event",
+      output: {},
+    });
+  });
 });

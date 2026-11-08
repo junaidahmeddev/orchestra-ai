@@ -69,4 +69,15 @@ describe("handleOutput", () => {
     });
     expect(resBool.output.result).toBe("false");
   });
+
+  it("should handle undefined data cleanly without throwing an exception", async () => {
+    const res = await handleOutput({
+      nodeId: "out-nodata",
+      config: { format: "json" },
+      data: undefined as any,
+    });
+
+    expect(res.output.result).toEqual({});
+    expect(res.output.isFinalOutput).toBe(true);
+  });
 });
