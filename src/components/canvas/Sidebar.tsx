@@ -16,6 +16,7 @@ import {
   Check,
   AlertTriangle,
   GripVertical,
+  MinusCircle,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -236,6 +237,9 @@ export function RightSidebar({ className = "" }: SidebarProps) {
           )}
           {runResult?.status === "FAILED" && (
             <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
+          )}
+          {runResult?.status === "SKIPPED" && (
+            <span className="h-2 w-2 rounded-full bg-amber-400" />
           )}
         </button>
       </div>
@@ -502,6 +506,12 @@ export function RightSidebar({ className = "" }: SidebarProps) {
                 {runResult.status === "PENDING" && (
                   <span className="inline-flex items-center space-x-1.5 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-400">
                     PENDING
+                  </span>
+                )}
+                {runResult.status === "SKIPPED" && (
+                  <span className="inline-flex items-center space-x-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-xs font-bold text-amber-400">
+                    <MinusCircle className="h-3.5 w-3.5" />
+                    <span>SKIPPED</span>
                   </span>
                 )}
               </div>

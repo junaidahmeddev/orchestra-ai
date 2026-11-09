@@ -19,7 +19,7 @@ import AIEngineNode from "./nodes/AIEngineNode";
 import DataProcessorNode from "./nodes/DataProcessorNode";
 import IntegrationNode from "./nodes/IntegrationNode";
 import OutputNode from "./nodes/OutputNode";
-import { Loader2, CheckCircle2, XCircle, Info } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Info, MinusCircle } from "lucide-react";
 
 interface FlowCanvasProps {
   nodeStatuses?: Map<string, string>;
@@ -55,6 +55,13 @@ const CustomNodeComponent = (props: CustomNodeProps) => {
     statusOverlay = (
       <div className="absolute -top-2.5 -right-2.5 flex items-center justify-center rounded-full bg-red-950 p-1 text-red-400 border border-red-500 shadow-lg z-20">
         <XCircle className="h-3.5 w-3.5" />
+      </div>
+    );
+  } else if (status === "SKIPPED") {
+    statusBorderClass = "opacity-60 ring-1 ring-slate-600";
+    statusOverlay = (
+      <div className="absolute -top-2.5 -right-2.5 flex items-center justify-center rounded-full bg-slate-900 p-1 text-slate-400 border border-slate-700 shadow-lg z-20" title="Node execution skipped due to upstream failure">
+        <MinusCircle className="h-3.5 w-3.5" />
       </div>
     );
   }

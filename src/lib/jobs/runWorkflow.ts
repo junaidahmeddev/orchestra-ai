@@ -194,6 +194,17 @@ export const runWorkflow = inngest.createFunction(
             },
           });
 
+          // Mark remaining unexecuted nodes in this run as SKIPPED
+          await db.nodeRun.updateMany({
+            where: {
+              workflowRunId,
+              status: "PENDING",
+            },
+            data: {
+              status: "SKIPPED",
+            },
+          });
+
           // Mark the overall run as FAILED (per PRD: error contained to the node)
           await db.workflowRun.update({
             where: { id: workflowRunId },
@@ -220,6 +231,17 @@ export const runWorkflow = inngest.createFunction(
       return { success: true, nodesExecuted: sortedNodes.length };
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
+
+      // Mark any remaining pending node runs as SKIPPED
+      await db.nodeRun.updateMany({
+        where: {
+          workflowRunId,
+          status: "PENDING",
+        },
+        data: {
+          status: "SKIPPED",
+        },
+      });
 
       // Mark the overall run as FAILED
       await db.workflowRun.update({

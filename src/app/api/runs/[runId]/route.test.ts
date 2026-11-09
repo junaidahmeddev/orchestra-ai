@@ -115,4 +115,57 @@ describe("GET /api/runs/[runId] (Integration Tests)", () => {
     expect(data.nodeRuns[0].nodeId).toBe("node-trigger");
     expect(data.nodeRuns[0].output).toEqual({ result: "Hello" });
   });
+
+  it("should return FAILED and SKIPPED nodeRuns correctly when workflow execution fails", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({
+      user: { id: "user-owner", email: "owner@orchestra.ai" },
+      expires: "2099-01-01",
+    });
+
+    const now = new Date();
+    vi.mocked(db.workflowRun.findUnique).mockResolvedValueOnce({
+      id: "run-failed-1",
+      status: "FAILED",
+      triggeredBy: "MANUAL",
+      startedAt: now,
+      finishedAt: now,
+      errorMessage: 'Node "JS Code Transformer" failed',
+      workflowId: "wf-owner",
+      nodeRuns: [
+        {
+          id: "nr-fail",
+          workflowRunId: "run-failed-1",
+          nodeId: "node-dp",
+          status: "FAILED",
+          input: {},
+          output: null,
+          errorMessage: "Sandbox timeout",
+          startedAt: now,
+          finishedAt: now,
+        },
+        {
+          id: "nr-skip",
+          workflowRunId: "run-failed-1",
+          nodeId: "node-out",
+          status: "SKIPPED",
+          input: null,
+          output: null,
+          errorMessage: null,
+          startedAt: null,
+          finishedAt: null,
+        },
+      ],
+      workflow: { userId: "user-owner" },
+    } as any);
+
+    const req = new Request("http://localhost:3000/api/runs/run-failed-1");
+    const res = await getRun(req, { params: { runId: "run-failed-1" } });
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.status).toBe("FAILED");
+    expect(data.nodeRuns).toHaveLength(2);
+    expect(data.nodeRuns[0].status).toBe("FAILED");
+    expect(data.nodeRuns[1].status).toBe("SKIPPED");
+  });
 });
