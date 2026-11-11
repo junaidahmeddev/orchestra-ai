@@ -226,7 +226,7 @@ export default function HomePage() {
                     <div className="mt-3 space-y-1.5 text-[11px] text-zinc-400">
                       <div className="flex justify-between">
                         <span className="text-zinc-500">Model:</span>
-                        <span className="font-mono text-purple-300">gemini-3.6-flash</span>
+                        <span className="font-mono text-purple-300">gemini-2.0-flash</span>
                       </div>
                       <div className="rounded bg-zinc-950 p-2 font-mono text-[10px] text-zinc-300 line-clamp-2 border border-zinc-800">
                         &quot;Analyze ticket &amp; generate summary&quot;

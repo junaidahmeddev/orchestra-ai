@@ -64,7 +64,7 @@ export default function AIEngineNode({
         <div className="flex justify-between items-center">
           <span className="font-medium text-slate-400">Model:</span>
           <span className="font-mono text-indigo-300 font-semibold bg-indigo-500/10 px-1 py-0.5 rounded border border-indigo-500/30 text-[9px] truncate max-w-[100px]">
-            {data.config.model || "gemini-3.6-flash"}
+            {data.config.model || "gemini-2.0-flash"}
           </span>
         </div>
 

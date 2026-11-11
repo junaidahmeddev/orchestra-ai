@@ -79,7 +79,7 @@ describe("handleAIEngine", () => {
       nodeId: "node-1",
       config: {
         provider: "GEMINI",
-        model: "gemini-3.6-flash",
+        model: "gemini-2.0-flash",
         systemPrompt: "You are an assistant for {{user.name}}",
         userPrompt: "Process topic: {{topic}}",
       },
@@ -114,7 +114,7 @@ describe("handleAIEngine", () => {
       nodeId: "node-2",
       config: {
         provider: "GEMINI",
-        model: "gemini-3.6-flash",
+        model: "gemini-2.0-flash",
       },
       data: {
         result: { summary: "Transformed Data", itemsCount: 10 },

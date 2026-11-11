@@ -16,7 +16,7 @@ export async function handleAIEngine(
   input: NodeHandlerInput
 ): Promise<NodeHandlerOutput> {
   const provider = input.config.provider || "GEMINI";
-  const modelName = input.config.model || "gemini-3.6-flash";
+  const modelName = input.config.model || "gemini-2.0-flash";
   const rawSystemPrompt = (input.config.systemPrompt || "") as string;
   const rawUserPrompt = ((input.config.userPrompt || input.config.prompt || "") as string);
   const temperature = (input.config.temperature as number) ?? 0.7;

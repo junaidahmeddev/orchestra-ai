@@ -304,7 +304,7 @@ export function RightSidebar({ className = "" }: SidebarProps) {
                 <input
                   type="text"
                   className="w-full rounded-xl border border-zinc-800/80 bg-zinc-950 px-3.5 py-2.5 text-sm font-mono text-zinc-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 transition-all"
-                  value={config.model || "gemini-3.6-flash"}
+                  value={config.model || "gemini-2.0-flash"}
                   onChange={(e) => handleConfigChange("model", e.target.value)}
                 />
               </div>

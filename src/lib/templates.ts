@@ -52,7 +52,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
             type: "AI_ENGINE",
             config: {
               provider: "GEMINI",
-              model: "gemini-3.6-flash",
+              model: "gemini-2.0-flash",
               systemPrompt:
                 "You are a senior customer success manager. Draft an empathetic, polite, and actionable email response to this customer complaint. Acknowledge their issue clearly, offer an apology for their frustration, and outline realistic next steps to resolve it.",
               userPrompt: "Customer Message:\n{{previous_output}}",
@@ -150,7 +150,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
             type: "AI_ENGINE",
             config: {
               provider: "GEMINI",
-              model: "gemini-3.6-flash",
+              model: "gemini-2.0-flash",
               systemPrompt:
                 "You are an executive assistant. Review the provided raw meeting notes and extract: 1. Key Decisions Made, 2. Action Items (with assigned owner and priority: High/Medium/Low), 3. Next Follow-up Date. Format the output as a clean, structured list.",
               userPrompt: "Meeting Notes Transcript:\n{{previous_output}}",

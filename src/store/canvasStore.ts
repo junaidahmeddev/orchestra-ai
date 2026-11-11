@@ -80,7 +80,7 @@ const getDefaultConfig = (type: CustomNode["data"]["type"]): NodeConfig => {
     case "AI_ENGINE":
       return {
         provider: "GEMINI",
-        model: "gemini-3.6-flash",
+        model: "gemini-2.0-flash",
         systemPrompt: "You are a helpful AI assistant.",
         temperature: 0.7,
       };
